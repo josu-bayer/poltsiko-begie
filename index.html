@@ -714,15 +714,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   function knownPeopleNames(){
     var seen = {}, list = [];
+    function add(izena){
+      izena = (izena || "").trim();
+      if (!izena || seen[izena.toLowerCase()]) return;
+      seen[izena.toLowerCase()] = true;
+      list.push(izena);
+    }
     mugimenduak.forEach(function(m){
       if (!m.partekatuak) return;
-      m.partekatuak.forEach(function(s){
-        var izena = (s.izena || "").trim();
-        if (!izena || seen[izena.toLowerCase()]) return;
-        seen[izena.toLowerCase()] = true;
-        list.push(izena);
-      });
+      m.partekatuak.forEach(function(s){ add(s.izena); });
     });
+    kitapenPertsonak.forEach(function(k){ add(k.izena); });
     return list;
   }
 
