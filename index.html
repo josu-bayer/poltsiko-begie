@@ -220,14 +220,14 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     </svg>
     <div>
       <h1>Poltsiko Begie</h1>
-      <p>Aitak pagetakoek eta neure gastuek, leku berean</p>
+      <p>Aitak pagetakuek ta neure gastuek, leku berean</p>
     </div>
   </header>
 
   <nav class="tabs">
-    <button class="tab-btn active" id="tabLaburpena" type="button" data-tab="laburpena">Laburpene</button>
-    <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekoe</button>
-    <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenek</button>
+    <button class="tab-btn active" id="tabLaburpena" type="button" data-tab="laburpena">Laburpena</button>
+    <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekue</button>
+    <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenak</button>
   </nav>
 
   <!-- LABURPENA -->
@@ -235,7 +235,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     <div class="bal-grid">
       <div class="panel bal-card">
-        <div class="label">Aitak pagetakoek</div>
+        <div class="label">Aitak pagetakuek</div>
         <div class="value" id="balAitak">—</div>
         <div class="sub" id="balAitakSub"></div>
         <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kendu</button>
@@ -243,31 +243,31 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <div class="panel bal-card">
         <div class="label">Neure gastuek</div>
         <div class="value" id="balNeure">—</div>
-        <div class="sub">Sarrerek ken gastuek</div>
+        <div class="sub">Sarrerak ken gastuek</div>
       </div>
     </div>
-    <div class="legend-hint">Positiboe = zure alde &nbsp;·&nbsp; Negatiboe = zor duzu</div>
+    <div class="legend-hint">Positibue = neure alde &nbsp;·&nbsp; Negatibue = zor dot</div>
 
     <div class="month-nav">
-      <button class="icon-btn" id="btnMonthPrev" type="button" aria-label="Aurreko hilabetee">‹</button>
+      <button class="icon-btn" id="btnMonthPrev" type="button" aria-label="Aurreko hilea">‹</button>
       <h2 id="monthLabel">—</h2>
-      <button class="icon-btn" id="btnMonthNext" type="button" aria-label="Hurrengo hilabetee">›</button>
+      <button class="icon-btn" id="btnMonthNext" type="button" aria-label="Datorren hilea">›</button>
     </div>
 
     <div class="mini-stats">
       <div class="panel mini-stat"><div class="v neg" id="statGastuak">—</div><div class="l">Neure gastuek</div></div>
-      <div class="panel mini-stat"><div class="v pos" id="statSarrerak">—</div><div class="l">Sarrerek</div></div>
-      <div class="panel mini-stat"><div class="v" id="statAitakGastuak">—</div><div class="l">Aitak ordainduta</div></div>
+      <div class="panel mini-stat"><div class="v pos" id="statSarrerak">—</div><div class="l">Sarrerak</div></div>
+      <div class="panel mini-stat"><div class="v" id="statAitakGastuak">—</div><div class="l">Aitak pageta</div></div>
     </div>
 
     <div class="panel chart-card">
-      <h3 id="catChartTitle">Kategorieka</h3>
-      <div class="chart-empty" id="catChartEmpty">Hilabete honetan ez dago gasturik</div>
+      <h3 id="catChartTitle">Kategoriaka</h3>
+      <div class="chart-empty" id="catChartEmpty">Hile honetan ez dau gasturik</div>
       <canvas id="catChart"></canvas>
     </div>
 
     <div class="tmpl-row-wrap" id="templateRowWrap" style="display:none">
-      <h3>Errepikakoek</h3>
+      <h3>Errepikakorrak</h3>
       <div class="tmpl-row" id="templateRow"></div>
     </div>
 
@@ -282,16 +282,16 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <!-- URTEKOA -->
   <section class="view" id="viewUrtekoa">
     <div class="year-nav">
-      <button class="icon-btn" id="btnYearPrev" type="button" aria-label="Aurreko urtee">‹</button>
+      <button class="icon-btn" id="btnYearPrev" type="button" aria-label="Aurreko urtie">‹</button>
       <h2 id="yearLabel">—</h2>
-      <button class="icon-btn" id="btnYearNext" type="button" aria-label="Hurrengo urtee">›</button>
+      <button class="icon-btn" id="btnYearNext" type="button" aria-label="Datorren urtie">›</button>
     </div>
     <p class="settings-hint" id="creationNote" style="text-align:center"></p>
 
     <div class="panel table-card">
-      <h3>Hilabeteka</h3>
+      <h3>Hileka</h3>
       <table class="year-table">
-        <thead><tr><th>Hilabetee</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <thead><tr><th>Hilea</th><th>Neurie</th><th>Aitana</th></tr></thead>
         <tbody id="monthGridBody"></tbody>
       </table>
     </div>
@@ -299,7 +299,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <div class="panel table-card">
       <h3>Urteka</h3>
       <table class="year-table">
-        <thead><tr><th>Urtee</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <thead><tr><th>Urtie</th><th>Neurie</th><th>Aitana</th></tr></thead>
         <tbody id="yearGridBody"></tbody>
       </table>
     </div>
@@ -309,53 +309,53 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <section class="view" id="viewEzarpenak">
 
     <div class="settings-section">
-      <h3>Kategoriek</h3>
-      <p class="settings-hint">Zure kategorie zerrende. Gehitu edo kendu nahi dituzunek.</p>
+      <h3>Kategoriak</h3>
+      <p class="settings-hint">Neure kategoria zerrenda. Gehitu edo kendu nahi dituzunek.</p>
       <div class="chip-list" id="categoryChips"></div>
       <div class="add-row">
-        <input type="text" id="newCategoryInput" placeholder="Kategorie berrie">
+        <input type="text" id="newCategoryInput" placeholder="Kategoria barrie">
         <button class="btn btn-primary btn-small" id="btnAddCategory" type="button">Gehitu</button>
       </div>
     </div>
 
     <div class="settings-section">
-      <h3>Errepikakoek</h3>
-      <p class="settings-hint">Hileroko gastu finkoek (alokairue, harpidetzek...) sakatze bakarrarekin erregistratzeko.</p>
+      <h3>Errepikakorrak</h3>
+      <p class="settings-hint">Hileko gastu finkuek (alokairue, harpidetzak...) sakatze bakarrarekin erregistratzeko.</p>
       <div id="templateList"></div>
-      <button class="btn btn-primary btn-small" id="btnAddTemplate" type="button">+ Txantiloi berrie</button>
+      <button class="btn btn-primary btn-small" id="btnAddTemplate" type="button">+ Txantiloi barrie</button>
     </div>
 
     <div class="settings-section">
       <h3>Datuek</h3>
-      <button class="btn" id="btnExportCsv" type="button">CSV esportatu</button>
+      <button class="btn" id="btnExportCsv" type="button">CSV esporteu</button>
       <div class="panel seed-info" id="seedInfo" style="margin-top:12px"></div>
     </div>
 
   </section>
 
   <footer>
-    Datuek hodeian sinkronizatuta (Firebase). Esteke hau duen edonork ikusi eta editatu ditzake.<br>
-    Poltsiko Begie &mdash; aitak pagetakoek eta neure gastuen kontrole.
+    Datuek hodeian sinkronizauta (Firebase). Esteka hau dekon edonork ikusi eta editau ahal deu.<br>
+    Poltsiko Begie &mdash; aitak pagetakuek ta neure gastuen kontrola.
   </footer>
 </div>
 
 <!-- Modal: mugimendu -->
 <div class="modal-overlay" id="modalMugimendu">
   <div class="modal">
-    <h2 id="modalMugimenduTitle">Mugimendu berrie</h2>
+    <h2 id="modalMugimenduTitle">Mugimendu barrie</h2>
     <form id="movForm">
       <input type="hidden" id="fId">
 
       <div class="field">
-        <label>Mote</label>
+        <label>Mota</label>
         <div class="seg" id="segMota">
           <button type="button" data-value="gastua" class="active">Gastue</button>
-          <button type="button" data-value="sarrera">Sarrere</button>
+          <button type="button" data-value="sarrera">Sarrera</button>
         </div>
       </div>
 
       <div class="field" id="fieldNork">
-        <label>Nork ordaindu</label>
+        <label>Nork page deu</label>
         <div class="seg" id="segNork">
           <button type="button" data-value="neuk" class="active">Neuk</button>
           <button type="button" data-value="aitak">Aitak</button>
@@ -363,18 +363,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field">
-        <label for="fData">Date</label>
+        <label for="fData">Data</label>
         <input type="date" id="fData" required>
       </div>
 
       <div class="field">
-        <label for="fDeskribapena">Deskribapene</label>
+        <label for="fDeskribapena">Deskribapena</label>
         <input type="text" id="fDeskribapena" list="merchantList" placeholder="Adib: Eroski" required>
         <datalist id="merchantList"></datalist>
       </div>
 
       <div class="field">
-        <label for="fKategoria">Kategorie</label>
+        <label for="fKategoria">Kategoria</label>
         <select id="fKategoria" required></select>
       </div>
 
@@ -384,7 +384,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="btn btn-danger" id="btnMovDelete" style="display:none">Ezabatu</button>
+        <button type="button" class="btn btn-danger" id="btnMovDelete" style="display:none">Ezabau</button>
         <button type="button" class="btn btn-ghost" id="btnMovCancel">Utzi</button>
         <button type="submit" class="btn btn-primary">Gorde</button>
       </div>
@@ -395,12 +395,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 <!-- Modal: kitatu -->
 <div class="modal-overlay" id="modalKitatu">
   <div class="modal">
-    <h2>Aitak pagetakoek kendu</h2>
+    <h2>Aitak pagetakuek kendu</h2>
     <p class="info-line" id="kitatuInfo"></p>
 
     <div class="field">
       <div class="seg" id="segKitatuMoo">
-        <button type="button" data-value="osorik" class="active">Osorik kendu</button>
+        <button type="button" data-value="osorik" class="active">Dana kendu</button>
         <button type="button" data-value="zati">Beste kopuru bat</button>
       </div>
     </div>
@@ -420,17 +420,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 <!-- Modal: txantiloi -->
 <div class="modal-overlay" id="modalTxantiloi">
   <div class="modal">
-    <h2 id="modalTxantiloiTitle">Txantiloi berrie</h2>
+    <h2 id="modalTxantiloiTitle">Txantiloi barrie</h2>
     <form id="txantiloiForm">
       <input type="hidden" id="tId">
 
       <div class="field">
-        <label for="tIzena">Izene</label>
+        <label for="tIzena">Izena</label>
         <input type="text" id="tIzena" placeholder="Adib: Alokairue" required>
       </div>
 
       <div class="field">
-        <label for="tKategoria">Kategorie</label>
+        <label for="tKategoria">Kategoria</label>
         <select id="tKategoria" required></select>
       </div>
 
@@ -440,7 +440,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field">
-        <label>Nork ordaintzen duen</label>
+        <label>Nork ordaintzen deuen</label>
         <div class="seg" id="segNorkT">
           <button type="button" data-value="neuk" class="active">Neuk</button>
           <button type="button" data-value="aitak">Aitak</button>
@@ -448,7 +448,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="modal-actions">
-        <button type="button" class="btn btn-danger" id="btnTxantiloiDelete" style="display:none">Ezabatu</button>
+        <button type="button" class="btn btn-danger" id="btnTxantiloiDelete" style="display:none">Ezabau</button>
         <button type="button" class="btn btn-ghost" id="btnTxantiloiCancel">Utzi</button>
         <button type="submit" class="btn btn-primary">Gorde</button>
       </div>
@@ -483,12 +483,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   enableIndexedDbPersistence(db).catch(function(e){ /* multiple tabs or unsupported browser: ignore, Firestore still works online */ });
 
   /* ---------- Constants ---------- */
-  var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraioe","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Chatgpt","Claude","Mus","Bestelakoek"];
+  var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraiue","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Claude","Mus","Bestelakuek"];
   var HASIERAKO_AITAK = -250.00;
   var HASIERAKO_NEURE = -1000.00;
   var HASIERAKO_DATA = "2026-08-11";
   var CHART_COLORS = ["#2a78d6","#eb6834","#1baf7a","#eda100","#e87ba4","#008300","#4a3aa7","#e34948"];
-  var MESE_LUZEAK = ["Urtarrile","Zezeile","Martie","Aprile","Maiatze","Bagile","Garagarrile","Agustue","Iraile","Urrie","Zemendie","Abendue"];
+  var MESE_LUZEAK = ["Urtarrile","Zezeile","Martie","Aprile","Maiatzie","Bagile","Garagarrile","Agustue","Iraile","Urrie","Zemendie","Abendue"];
   var MESE_LABURRAK = ["urt","zez","mar","apr","mai","bag","gar","agu","ira","urr","zem","abe"];
 
   /* ---------- State ---------- */
@@ -640,7 +640,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   /* ---------- Category select population ---------- */
   function populateCategorySelect(sel, current){
-    var html = '<option value="" disabled ' + (current ? "" : "selected") + '>Aukeratu kategorie</option>';
+    var html = '<option value="" disabled ' + (current ? "" : "selected") + '>Aukeratu kategoria</option>';
     config.kategoriak.forEach(function(k){
       html += '<option value="' + escapeHtml(k) + '"' + (k === current ? " selected" : "") + '>' + escapeHtml(k) + '</option>';
     });
@@ -770,9 +770,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     elN.className = "value " + (b.neure >= -0.005 ? "pos" : "neg");
 
     var sub;
-    if (Math.abs(b.aitak) < 0.005) sub = "Kenduta zaudete";
+    if (Math.abs(b.aitak) < 0.005) sub = "Dana kenduta";
     else if (b.aitak < 0) sub = "Aitari zor dotset";
-    else sub = "Aitak zor dizu";
+    else sub = "Aitak zor doste";
     document.getElementById("balAitakSub").textContent = sub;
   }
 
@@ -798,7 +798,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
 
   function renderCategoryChartSection(){
-    document.getElementById("catChartTitle").textContent = "Kategorieka — " + monthLabel(visibleMonth);
+    document.getElementById("catChartTitle").textContent = "Kategoriaka — " + monthLabel(visibleMonth);
     drawCategoryChart();
   }
 
@@ -819,7 +819,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     countEl.textContent = "Mugimenduek (" + monthMovs.length + ")";
 
     if (!monthMovs.length){
-      el.innerHTML = '<div class="panel empty">Hilabete honetan ez dago mugimendurik.</div>';
+      el.innerHTML = '<div class="panel empty">Hile honetan ez dau mugimendurik.</div>';
       return;
     }
 
@@ -828,7 +828,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var isKitapena = m.mota === "kitapena";
       var badge = isKitapena ? '<span class="badge badge-aitak">Kenduta</span>'
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
-      var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabatu" type="button">×</button>' : '';
+      var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
       return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
         '<div class="mov-date">' + fmtDataLaburra(m.data).replace("\n","<br>") + '</div>' +
         '<div class="mov-info">' +
@@ -858,7 +858,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     yearPrevBtn.disabled = visibleYear <= creationYear;
     yearPrevBtn.title = yearPrevBtn.disabled ? "Poltsiko Begie oraindik ez zen existitzen" : "";
     document.getElementById("creationNote").textContent =
-      "Poltsiko Begie sortze date: " + config.hasierakoData + ". Aurreko hilabeteek ez daukate daturik.";
+      "Poltsiko Begie sortze data: " + config.hasierakoData + ". Aurreko hilabeteek ez daukate daturik.";
 
     var curKey = currentMonthKey();
     var rows = "";
@@ -900,28 +900,28 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- Render: Ezarpenak ---------- */
   function renderCategoryChips(){
     var el = document.getElementById("categoryChips");
-    if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dago kategorierik.</span>'; return; }
+    if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dau kategoriarik</span>'; return; }
     el.innerHTML = config.kategoriak.map(function(k){
-      return '<span class="chip-removable">' + escapeHtml(k) + '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabatu">×</button></span>';
+      return '<span class="chip-removable">' + escapeHtml(k) + '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabau">×</button></span>';
     }).join("");
   }
 
   function renderTemplateList(){
     var el = document.getElementById("templateList");
-    if (!txantiloiak.length){ el.innerHTML = '<div class="panel empty">Ez dago txantiloirik oraindik.</div>'; return; }
+    if (!txantiloiak.length){ el.innerHTML = '<div class="panel empty">Oiñekarren ez dau txantiloirik</div>'; return; }
     el.innerHTML = txantiloiak.map(function(t){
       return '<div class="panel tmpl-list-item">' +
         '<div class="info"><div class="name">' + escapeHtml(t.izena) + '</div>' +
         '<div class="meta">' + escapeHtml(t.kategoria) + ' · ' + (t.nork === "aitak" ? "Aitak" : "Neuk") + ' · ' + fmtEuro(t.kopurua) + '</div></div>' +
         '<button class="btn btn-small" data-action="edit-tmpl" data-id="' + t.id + '" type="button">Editatu</button>' +
-        '<button class="btn btn-small btn-danger" data-action="delete-tmpl" data-id="' + t.id + '" type="button">Ezabatu</button>' +
+        '<button class="btn btn-small btn-danger" data-action="delete-tmpl" data-id="' + t.id + '" type="button">Ezabau</button>' +
       '</div>';
     }).join("");
   }
 
   function renderSeedInfo(){
     document.getElementById("seedInfo").innerHTML =
-      "Hasierako saldoek (" + config.hasierakoData + "): Aitak pagetakoek " + fmtEuro(config.aitakHasiera, true) +
+      "Hasikerako salduek (" + config.hasierakoData + "): Aitak pagetakuek " + fmtEuro(config.aitakHasiera, true) +
       " · Neure gastuek " + fmtEuro(config.neureHasiera, true);
   }
 
@@ -1000,7 +1000,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     movForm.reset();
     updateMerchantDatalist();
     if (mov){
-      document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editatu";
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editau";
       fId.value = mov.id;
       fData.value = mov.data;
       fDeskribapena.value = mov.deskribapena || "";
@@ -1011,7 +1011,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       categoryManuallySet = true;
       btnMovDelete.style.display = "inline-block";
     } else {
-      document.getElementById("modalMugimenduTitle").textContent = "Mugimendu berrie";
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendu barrie";
       fId.value = "";
       fData.value = todayStr();
       populateCategorySelect(fKategoria, "");
@@ -1041,8 +1041,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   btnMovDelete.addEventListener("click", function(){
     var id = fId.value;
     if (!id) return;
-    if (window.confirm("Ziur mugimendu hau ezabatu nahi duzula? Ekintze hau ez da desegin ahal.")){
-      deleteMugimendu(id).then(closeMovForm).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+    if (window.confirm("Ziur mugimendu hau ezabau gurezule? Ekintza hau ezin da desegin.")){
+      deleteMugimendu(id).then(closeMovForm).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
     }
   });
 
@@ -1052,8 +1052,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var mota = getSegValue("segMota");
     var nork = mota === "sarrera" ? "neuk" : getSegValue("segNork");
     var kopurua = parseFloat(fKopurua.value) || 0;
-    if (!fKategoria.value){ window.alert("Aukeratu kategorie bat."); return; }
-    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiagoe izan behar da."); return; }
+    if (!fKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
+    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiaua izan ber da."); return; }
     var existing = id ? movById(id) : null;
     var data = {
       data: fData.value,
@@ -1079,8 +1079,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var delBtn = e.target.closest('button[data-action="delete-kitapena"]');
     if (delBtn){
       var id = delBtn.getAttribute("data-id");
-      if (window.confirm("Ziur kenkete hau ezabatu nahi duzula?")){
-        deleteMugimendu(id).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+      if (window.confirm("Ziur kenketa hau ezabau gurezule?")){
+        deleteMugimendu(id).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
       }
       return;
     }
@@ -1108,10 +1108,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     };
     var docId = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     setDoc(doc(db, "mugimenduak", docId), data).then(function(){
-      showToast(t.izena + " erregistratu da (" + fmtEuro(data.kopurua) + ")", function(){
+      showToast(t.izena + " erregistrau in da (" + fmtEuro(data.kopurua) + ")", function(){
         deleteMugimendu(docId).catch(function(){});
       });
-    }).catch(function(err){ window.alert("Ezin izan da erregistratu: " + err.message); });
+    }).catch(function(err){ window.alert("Ezin izan da erregistrau: " + err.message); });
   });
 
   /* ---------- Settle up (kitatu) modal ---------- */
@@ -1124,9 +1124,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var bal = computeBalances().aitak;
     kitatuBalanceSnapshot = bal;
     var info;
-    if (Math.abs(bal) < 0.005) info = "Dagoeneko kenduta zaudete (0,00 €).";
+    if (Math.abs(bal) < 0.005) info = "Dana kenduta dau (0,00 €).";
     else if (bal < 0) info = "Aitari <strong>" + fmtEuro(Math.abs(bal)) + "</strong> zor dotset.";
-    else info = "Aitak <strong>" + fmtEuro(bal) + "</strong> zor dizu.";
+    else info = "Aitak <strong>" + fmtEuro(bal) + "</strong> zor dotzu.";
     document.getElementById("kitatuInfo").innerHTML = info;
     setSegValue("segKitatuMoo", "osorik");
     document.getElementById("kitatuPartialField").style.display = "none";
@@ -1147,18 +1147,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var deskribapena;
     if (mode === "osorik"){
       signedKopurua = -bal;
-      deskribapena = "Kenkete (osorik)";
+      deskribapena = "Kenketa (osoa)";
     } else {
       var entered = parseFloat(document.getElementById("fKitatuKopurua").value);
-      if (!entered || entered <= 0){ window.alert("Idatzi baliozko kopuru bat."); return; }
+      if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
       var direction = bal < 0 ? 1 : -1;
       signedKopurua = direction * entered;
-      deskribapena = "Kenkete (zati bat)";
+      deskribapena = "Kenketa (zati bat)";
     }
     var data = {
       data: todayStr(),
       deskribapena: deskribapena,
-      kategoria: "Kenkete",
+      kategoria: "Kenketa",
       kopurua: signedKopurua,
       mota: "kitapena",
       nork: "aitak",
@@ -1176,7 +1176,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var v = input.value.trim();
     if (!v) return;
     if (config.kategoriak.some(function(c){ return c.toLowerCase() === v.toLowerCase(); })){
-      window.alert("Kategorie hori badago jada.");
+      window.alert("Kategoria hori badau jada.");
       return;
     }
     updateConfigCategories(config.kategoriak.concat([v])).then(function(){ input.value = ""; });
@@ -1186,7 +1186,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var btn = e.target.closest("button[data-cat]");
     if (!btn) return;
     var cat = btn.getAttribute("data-cat");
-    if (window.confirm('"' + cat + '" kategorie kendu nahi duzu? Kategorie hau erabili duten mugimenduek testue gordeko dute.')){
+    if (window.confirm('"' + cat + '" kategoria kendu gurezu? Kategoria hau erabili dedian mugimenduek testue gordeko dedia.')){
       updateConfigCategories(config.kategoriak.filter(function(c){ return c !== cat; }));
     }
   });
@@ -1205,7 +1205,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function openTxantiloiForm(t){
     txantiloiForm.reset();
     if (t){
-      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloie editatu";
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloie editau";
       tId.value = t.id;
       tIzena.value = t.izena;
       populateCategorySelect(tKategoria, t.kategoria);
@@ -1213,7 +1213,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       setSegValue("segNorkT", t.nork);
       btnTxantiloiDelete.style.display = "inline-block";
     } else {
-      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloi berrie";
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloi barrie";
       tId.value = "";
       populateCategorySelect(tKategoria, "");
       setSegValue("segNorkT", "neuk");
@@ -1230,16 +1230,16 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   btnTxantiloiDelete.addEventListener("click", function(){
     var id = tId.value;
     if (!id) return;
-    if (window.confirm("Ziur txantiloi hau ezabatu nahi duzula?")){
-      deleteTxantiloi(id).then(closeTxantiloiForm).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+    if (window.confirm("Ziur txantiloi hau ezabau gurezule?")){
+      deleteTxantiloi(id).then(closeTxantiloiForm).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
     }
   });
 
   txantiloiForm.addEventListener("submit", function(e){
     e.preventDefault();
-    if (!tKategoria.value){ window.alert("Aukeratu kategorie bat."); return; }
+    if (!tKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
     var kopurua = parseFloat(tKopurua.value) || 0;
-    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiagoe izan behar da."); return; }
+    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiaua izan ber da."); return; }
     var data = {
       izena: tIzena.value.trim(),
       kategoria: tKategoria.value,
@@ -1267,16 +1267,16 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     if (!t) return;
     if (action === "edit-tmpl") openTxantiloiForm(t);
     else if (action === "delete-tmpl"){
-      if (window.confirm("Ziur txantiloi hau ezabatu nahi duzula?")){
-        deleteTxantiloi(id).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+      if (window.confirm("Ziur txantiloi hau ezabau gurezule?")){
+        deleteTxantiloi(id).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
       }
     }
   });
 
   /* ---------- CSV export ---------- */
   document.getElementById("btnExportCsv").addEventListener("click", function(){
-    var motaLabelak = { gastua: "Gastue", sarrera: "Sarrere", kitapena: "Kenkete" };
-    var rows = [["Date","Deskribapene","Kategorie","Mote","Nork","Kopurue"]];
+    var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
+    var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue"]];
     mugimenduak.slice().sort(function(a,b){ return a.data.localeCompare(b.data); }).forEach(function(m){
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
