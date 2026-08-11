@@ -93,6 +93,10 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;letter-spacing:0.005em;fo
 .month-nav h2{font-size:1.05rem;color:var(--ink)}
 .icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--panel-border);background:var(--panel);color:var(--ink);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .icon-btn:active{transform:scale(0.94)}
+.icon-btn:disabled{opacity:0.3;cursor:default}
+.icon-btn:disabled:active{transform:none}
+.year-table tr.pre-creation td{color:var(--muted);font-style:italic}
+.year-table tr.pre-creation td.pre-creation-cell{text-align:center}
 
 .mini-stats{display:flex;gap:8px;margin-bottom:16px}
 .mini-stat{flex:1;min-width:0;padding:10px 6px;text-align:center}
@@ -216,14 +220,14 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     </svg>
     <div>
       <h1>Poltsiko Begie</h1>
-      <p>Aitak pagetakoak eta neure gastuak, leku berean</p>
+      <p>Aitak pagetakoek eta neure gastuek, leku berean</p>
     </div>
   </header>
 
   <nav class="tabs">
     <button class="tab-btn active" id="tabEtxean" type="button" data-tab="etxean">Etxean</button>
-    <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekoa</button>
-    <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenak</button>
+    <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekoe</button>
+    <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenek</button>
   </nav>
 
   <!-- ETXEAN -->
@@ -231,62 +235,63 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     <div class="bal-grid">
       <div class="panel bal-card">
-        <div class="label">Aitak pagetakoak</div>
+        <div class="label">Aitak pagetakoek</div>
         <div class="value" id="balAitak">—</div>
         <div class="sub" id="balAitakSub"></div>
-        <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kitatu</button>
+        <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kendu</button>
       </div>
       <div class="panel bal-card">
         <div class="label">Neure gastuek</div>
         <div class="value" id="balNeure">—</div>
-        <div class="sub">Sarrerak ken gastuak</div>
+        <div class="sub">Sarrerek ken gastuek</div>
       </div>
     </div>
-    <div class="legend-hint">Positiboa = zure alde &nbsp;·&nbsp; Negatiboa = zor duzu</div>
+    <div class="legend-hint">Positiboe = zure alde &nbsp;·&nbsp; Negatiboe = zor duzu</div>
 
     <div class="month-nav">
-      <button class="icon-btn" id="btnMonthPrev" type="button" aria-label="Aurreko hilabetea">‹</button>
+      <button class="icon-btn" id="btnMonthPrev" type="button" aria-label="Aurreko hilabetee">‹</button>
       <h2 id="monthLabel">—</h2>
-      <button class="icon-btn" id="btnMonthNext" type="button" aria-label="Hurrengo hilabetea">›</button>
+      <button class="icon-btn" id="btnMonthNext" type="button" aria-label="Hurrengo hilabetee">›</button>
     </div>
 
     <div class="mini-stats">
-      <div class="panel mini-stat"><div class="v neg" id="statGastuak">—</div><div class="l">Neure gastuak</div></div>
-      <div class="panel mini-stat"><div class="v pos" id="statSarrerak">—</div><div class="l">Sarrerak</div></div>
+      <div class="panel mini-stat"><div class="v neg" id="statGastuak">—</div><div class="l">Neure gastuek</div></div>
+      <div class="panel mini-stat"><div class="v pos" id="statSarrerak">—</div><div class="l">Sarrerek</div></div>
       <div class="panel mini-stat"><div class="v" id="statAitakGastuak">—</div><div class="l">Aitak ordainduta</div></div>
     </div>
 
     <div class="panel chart-card">
-      <h3 id="catChartTitle">Kategoriaka</h3>
+      <h3 id="catChartTitle">Kategorieka</h3>
       <div class="chart-empty" id="catChartEmpty">Hilabete honetan ez dago gasturik</div>
       <canvas id="catChart"></canvas>
     </div>
 
     <div class="tmpl-row-wrap" id="templateRowWrap" style="display:none">
-      <h3>Errepikakoak</h3>
+      <h3>Errepikakoek</h3>
       <div class="tmpl-row" id="templateRow"></div>
     </div>
 
     <div class="toolbar">
-      <h3 id="movCount">Mugimenduak</h3>
-      <button class="btn btn-primary" id="btnBerria" type="button">+ Berria</button>
+      <h3 id="movCount">Mugimenduek</h3>
+      <button class="btn btn-primary" id="btnBerria" type="button">+ Berrie</button>
     </div>
 
-    <section class="mov-list" id="movList" aria-label="Mugimenduak"></section>
+    <section class="mov-list" id="movList" aria-label="Mugimenduek"></section>
   </section>
 
   <!-- URTEKOA -->
   <section class="view" id="viewUrtekoa">
     <div class="year-nav">
-      <button class="icon-btn" id="btnYearPrev" type="button" aria-label="Aurreko urtea">‹</button>
+      <button class="icon-btn" id="btnYearPrev" type="button" aria-label="Aurreko urtee">‹</button>
       <h2 id="yearLabel">—</h2>
-      <button class="icon-btn" id="btnYearNext" type="button" aria-label="Hurrengo urtea">›</button>
+      <button class="icon-btn" id="btnYearNext" type="button" aria-label="Hurrengo urtee">›</button>
     </div>
+    <p class="settings-hint" id="creationNote" style="text-align:center"></p>
 
     <div class="panel table-card">
       <h3>Hilabeteka</h3>
       <table class="year-table">
-        <thead><tr><th>Hilabetea</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <thead><tr><th>Hilabetee</th><th>Neure</th><th>Aitak</th></tr></thead>
         <tbody id="monthGridBody"></tbody>
       </table>
     </div>
@@ -294,7 +299,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <div class="panel table-card">
       <h3>Urteka</h3>
       <table class="year-table">
-        <thead><tr><th>Urtea</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <thead><tr><th>Urtee</th><th>Neure</th><th>Aitak</th></tr></thead>
         <tbody id="yearGridBody"></tbody>
       </table>
     </div>
@@ -304,24 +309,24 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <section class="view" id="viewEzarpenak">
 
     <div class="settings-section">
-      <h3>Kategoriak</h3>
-      <p class="settings-hint">Zure kategoria zerrenda. Gehitu edo kendu nahi dituzunak.</p>
+      <h3>Kategoriek</h3>
+      <p class="settings-hint">Zure kategorie zerrende. Gehitu edo kendu nahi dituzunek.</p>
       <div class="chip-list" id="categoryChips"></div>
       <div class="add-row">
-        <input type="text" id="newCategoryInput" placeholder="Kategoria berria">
+        <input type="text" id="newCategoryInput" placeholder="Kategorie berrie">
         <button class="btn btn-primary btn-small" id="btnAddCategory" type="button">Gehitu</button>
       </div>
     </div>
 
     <div class="settings-section">
-      <h3>Errepikakoak</h3>
-      <p class="settings-hint">Hileroko gastu finkoak (alokairua, harpidetzak...) sakatze bakarrarekin erregistratzeko.</p>
+      <h3>Errepikakoek</h3>
+      <p class="settings-hint">Hileroko gastu finkoek (alokairue, harpidetzek...) sakatze bakarrarekin erregistratzeko.</p>
       <div id="templateList"></div>
-      <button class="btn btn-primary btn-small" id="btnAddTemplate" type="button">+ Txantiloi berria</button>
+      <button class="btn btn-primary btn-small" id="btnAddTemplate" type="button">+ Txantiloi berrie</button>
     </div>
 
     <div class="settings-section">
-      <h3>Datuak</h3>
+      <h3>Datuek</h3>
       <button class="btn" id="btnExportCsv" type="button">CSV esportatu</button>
       <div class="panel seed-info" id="seedInfo" style="margin-top:12px"></div>
     </div>
@@ -329,23 +334,23 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   </section>
 
   <footer>
-    Datuak hodeian sinkronizatuta (Firebase). Esteka hau duen edonork ikusi eta editatu ditzake.<br>
-    Poltsiko Begie &mdash; aitak pagetakoak eta neure gastuen kontrola.
+    Datuek hodeian sinkronizatuta (Firebase). Esteke hau duen edonork ikusi eta editatu ditzake.<br>
+    Poltsiko Begie &mdash; aitak pagetakoek eta neure gastuen kontrole.
   </footer>
 </div>
 
 <!-- Modal: mugimendu -->
 <div class="modal-overlay" id="modalMugimendu">
   <div class="modal">
-    <h2 id="modalMugimenduTitle">Mugimendu berria</h2>
+    <h2 id="modalMugimenduTitle">Mugimendu berrie</h2>
     <form id="movForm">
       <input type="hidden" id="fId">
 
       <div class="field">
-        <label>Mota</label>
+        <label>Mote</label>
         <div class="seg" id="segMota">
-          <button type="button" data-value="gastua" class="active">Gastua</button>
-          <button type="button" data-value="sarrera">Sarrera</button>
+          <button type="button" data-value="gastua" class="active">Gastue</button>
+          <button type="button" data-value="sarrera">Sarrere</button>
         </div>
       </div>
 
@@ -358,23 +363,23 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field">
-        <label for="fData">Data</label>
+        <label for="fData">Date</label>
         <input type="date" id="fData" required>
       </div>
 
       <div class="field">
-        <label for="fDeskribapena">Deskribapena</label>
-        <input type="text" id="fDeskribapena" list="merchantList" placeholder="Ej: Eroski" required>
+        <label for="fDeskribapena">Deskribapene</label>
+        <input type="text" id="fDeskribapena" list="merchantList" placeholder="Adib: Eroski" required>
         <datalist id="merchantList"></datalist>
       </div>
 
       <div class="field">
-        <label for="fKategoria">Kategoria</label>
+        <label for="fKategoria">Kategorie</label>
         <select id="fKategoria" required></select>
       </div>
 
       <div class="field">
-        <label for="fKopurua">Kopurua (&euro;)</label>
+        <label for="fKopurua">Kopurue (&euro;)</label>
         <input type="number" id="fKopurua" min="0.01" step="0.01" inputmode="decimal" required>
       </div>
 
@@ -390,24 +395,24 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 <!-- Modal: kitatu -->
 <div class="modal-overlay" id="modalKitatu">
   <div class="modal">
-    <h2>Aitak pagetakoak kitatu</h2>
+    <h2>Aitak pagetakoek kendu</h2>
     <p class="info-line" id="kitatuInfo"></p>
 
     <div class="field">
       <div class="seg" id="segKitatuMoo">
-        <button type="button" data-value="osorik" class="active">Osorik kitatu</button>
+        <button type="button" data-value="osorik" class="active">Osorik kendu</button>
         <button type="button" data-value="zati">Beste kopuru bat</button>
       </div>
     </div>
 
     <div class="field" id="kitatuPartialField" style="display:none">
-      <label for="fKitatuKopurua">Kopurua (&euro;)</label>
+      <label for="fKitatuKopurua">Kopurue (&euro;)</label>
       <input type="number" id="fKitatuKopurua" min="0.01" step="0.01" inputmode="decimal">
     </div>
 
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="btnKitatuCancel">Utzi</button>
-      <button type="button" class="btn btn-coral" id="btnKitatuConfirm">Kitatu</button>
+      <button type="button" class="btn btn-coral" id="btnKitatuConfirm">Kendu</button>
     </div>
   </div>
 </div>
@@ -415,22 +420,22 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 <!-- Modal: txantiloi -->
 <div class="modal-overlay" id="modalTxantiloi">
   <div class="modal">
-    <h2 id="modalTxantiloiTitle">Txantiloi berria</h2>
+    <h2 id="modalTxantiloiTitle">Txantiloi berrie</h2>
     <form id="txantiloiForm">
       <input type="hidden" id="tId">
 
       <div class="field">
-        <label for="tIzena">Izena</label>
-        <input type="text" id="tIzena" placeholder="Ej: Alokairua" required>
+        <label for="tIzena">Izene</label>
+        <input type="text" id="tIzena" placeholder="Adib: Alokairue" required>
       </div>
 
       <div class="field">
-        <label for="tKategoria">Kategoria</label>
+        <label for="tKategoria">Kategorie</label>
         <select id="tKategoria" required></select>
       </div>
 
       <div class="field">
-        <label for="tKopurua">Kopurua (&euro;)</label>
+        <label for="tKopurua">Kopurue (&euro;)</label>
         <input type="number" id="tKopurua" min="0.01" step="0.01" inputmode="decimal" required>
       </div>
 
@@ -478,13 +483,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   enableIndexedDbPersistence(db).catch(function(e){ /* multiple tabs or unsupported browser: ignore, Firestore still works online */ });
 
   /* ---------- Constants ---------- */
-  var DEFAULT_KATEGORIAK = ["Janaria","Alokairua","Garraioa","Etxeko gastuak","Pintxopo","Kanpoan jan","Bidaiak","Osasuna","Teknologia","Chatgpt","Claude","Mus","Bestelakoak"];
+  var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraioe","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Chatgpt","Claude","Mus","Bestelakoek"];
   var HASIERAKO_AITAK = -250.00;
   var HASIERAKO_NEURE = -1000.00;
   var HASIERAKO_DATA = "2026-08-11";
   var CHART_COLORS = ["#2a78d6","#eb6834","#1baf7a","#eda100","#e87ba4","#008300","#4a3aa7","#e34948"];
-  var MESE_LUZEAK = ["Urtarrila","Otsaila","Martxoa","Apirila","Maiatza","Ekaina","Uztaila","Abuztua","Iraila","Urria","Azaroa","Abendua"];
-  var MESE_LABURRAK = ["urt","ots","mar","api","mai","eka","uzt","abu","ira","urr","aza","abe"];
+  var MESE_LUZEAK = ["Urtarrile","Zezeile","Martie","Aprile","Maiatze","Bagile","Garagarrile","Agustue","Iraile","Urrie","Zemendie","Abendue"];
+  var MESE_LABURRAK = ["urt","zez","mar","apr","mai","bag","gar","agu","ira","urr","zem","abe"];
 
   /* ---------- State ---------- */
   var mugimenduak = [];
@@ -519,17 +524,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         config.hasierakoData = d.hasierakoData || HASIERAKO_DATA;
       }
       renderAll();
-    }, function(err){ console.error("Errorea config sinkronizatzean:", err); });
+    }, function(err){ console.error("Erroree config sinkronizatzean:", err); });
 
     onSnapshot(collection(db, "mugimenduak"), function(snapshot){
       mugimenduak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
       renderAll();
-    }, function(err){ console.error("Errorea mugimenduak sinkronizatzean:", err); });
+    }, function(err){ console.error("Erroree mugimenduek sinkronizatzean:", err); });
 
     onSnapshot(collection(db, "txantiloiak"), function(snapshot){
       txantiloiak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
       renderAll();
-    }, function(err){ console.error("Errorea txantiloiak sinkronizatzean:", err); });
+    }, function(err){ console.error("Erroree txantiloiek sinkronizatzean:", err); });
   }
 
   function saveMugimendu(id, data){
@@ -552,6 +557,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function todayStr(){ return new Date().toISOString().slice(0,10); }
   function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
   function currentMonthKey(){ return todayStr().slice(0,7); }
+  function creationMonthKey(){ return monthKeyOf(config.hasierakoData); }
 
   function fmtEuro(n, forceSign){
     n = Number(n) || 0;
@@ -634,7 +640,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   /* ---------- Category select population ---------- */
   function populateCategorySelect(sel, current){
-    var html = '<option value="" disabled ' + (current ? "" : "selected") + '>Aukeratu kategoria</option>';
+    var html = '<option value="" disabled ' + (current ? "" : "selected") + '>Aukeratu kategorie</option>';
     config.kategoriak.forEach(function(k){
       html += '<option value="' + escapeHtml(k) + '"' + (k === current ? " selected" : "") + '>' + escapeHtml(k) + '</option>';
     });
@@ -764,14 +770,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     elN.className = "value " + (b.neure >= -0.005 ? "pos" : "neg");
 
     var sub;
-    if (Math.abs(b.aitak) < 0.005) sub = "Kitatuta zaudete";
-    else if (b.aitak < 0) sub = "Aitari zor diozu";
+    if (Math.abs(b.aitak) < 0.005) sub = "Kenduta zaudete";
+    else if (b.aitak < 0) sub = "Aitari zor dotset";
     else sub = "Aitak zor dizu";
     document.getElementById("balAitakSub").textContent = sub;
   }
 
   function renderMonthNav(){
     document.getElementById("monthLabel").textContent = monthLabel(visibleMonth);
+    var prevBtn = document.getElementById("btnMonthPrev");
+    var atStart = visibleMonth <= creationMonthKey();
+    prevBtn.disabled = atStart;
+    prevBtn.title = atStart ? "Poltsiko Begie oraindik ez zen existitzen" : "";
   }
 
   function renderMonthStats(){
@@ -788,7 +798,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
 
   function renderCategoryChartSection(){
-    document.getElementById("catChartTitle").textContent = "Kategoriaka — " + monthLabel(visibleMonth);
+    document.getElementById("catChartTitle").textContent = "Kategorieka — " + monthLabel(visibleMonth);
     drawCategoryChart();
   }
 
@@ -806,7 +816,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var countEl = document.getElementById("movCount");
     var monthMovs = mugimenduak.filter(function(m){ return monthKeyOf(m.data) === visibleMonth; });
     monthMovs.sort(function(a,b){ return (b.data+(b.createdAt||"")).localeCompare(a.data+(a.createdAt||"")); });
-    countEl.textContent = "Mugimenduak (" + monthMovs.length + ")";
+    countEl.textContent = "Mugimenduek (" + monthMovs.length + ")";
 
     if (!monthMovs.length){
       el.innerHTML = '<div class="panel empty">Hilabete honetan ez dago mugimendurik.</div>';
@@ -816,7 +826,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     el.innerHTML = monthMovs.map(function(m){
       var effect = m.nork === "aitak" ? effectOnAitak(m) : effectOnNeure(m);
       var isKitapena = m.mota === "kitapena";
-      var badge = isKitapena ? '<span class="badge badge-aitak">Kitatuta</span>'
+      var badge = isKitapena ? '<span class="badge badge-aitak">Kenduta</span>'
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
       var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabatu" type="button">×</button>' : '';
       return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
@@ -843,10 +853,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- Render: Urtekoa ---------- */
   function renderUrtekoa(){
     document.getElementById("yearLabel").textContent = String(visibleYear);
+    var creationYear = parseInt(creationMonthKey().slice(0,4), 10);
+    var yearPrevBtn = document.getElementById("btnYearPrev");
+    yearPrevBtn.disabled = visibleYear <= creationYear;
+    yearPrevBtn.title = yearPrevBtn.disabled ? "Poltsiko Begie oraindik ez zen existitzen" : "";
+    document.getElementById("creationNote").textContent =
+      "Poltsiko Begie sortze date: " + config.hasierakoData + ". Aurreko hilabeteek ez daukate daturik.";
+
     var curKey = currentMonthKey();
     var rows = "";
     for (var mo = 1; mo <= 12; mo++){
       var key = visibleYear + "-" + String(mo).padStart(2, "0");
+      if (key < creationMonthKey()){
+        rows += '<tr class="pre-creation"><td>' + MESE_LUZEAK[mo-1] + '</td><td class="pre-creation-cell" colspan="2">—</td></tr>';
+        continue;
+      }
       var neureNet = 0, aitakNet = 0;
       mugimenduak.forEach(function(m){
         if (monthKeyOf(m.data) === key){ neureNet += effectOnNeure(m); aitakNet += effectOnAitak(m); }
@@ -879,7 +900,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- Render: Ezarpenak ---------- */
   function renderCategoryChips(){
     var el = document.getElementById("categoryChips");
-    if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dago kategoriarik.</span>'; return; }
+    if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dago kategorierik.</span>'; return; }
     el.innerHTML = config.kategoriak.map(function(k){
       return '<span class="chip-removable">' + escapeHtml(k) + '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabatu">×</button></span>';
     }).join("");
@@ -900,7 +921,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   function renderSeedInfo(){
     document.getElementById("seedInfo").innerHTML =
-      "Hasierako saldoak (" + config.hasierakoData + "): Aitak pagetakoak " + fmtEuro(config.aitakHasiera, true) +
+      "Hasierako saldoek (" + config.hasierakoData + "): Aitak pagetakoek " + fmtEuro(config.aitakHasiera, true) +
       " · Neure gastuek " + fmtEuro(config.neureHasiera, true);
   }
 
@@ -979,7 +1000,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     movForm.reset();
     updateMerchantDatalist();
     if (mov){
-      document.getElementById("modalMugimenduTitle").textContent = "Mugimendua editatu";
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editatu";
       fId.value = mov.id;
       fData.value = mov.data;
       fDeskribapena.value = mov.deskribapena || "";
@@ -990,7 +1011,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       categoryManuallySet = true;
       btnMovDelete.style.display = "inline-block";
     } else {
-      document.getElementById("modalMugimenduTitle").textContent = "Mugimendu berria";
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendu berrie";
       fId.value = "";
       fData.value = todayStr();
       populateCategorySelect(fKategoria, "");
@@ -1020,7 +1041,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   btnMovDelete.addEventListener("click", function(){
     var id = fId.value;
     if (!id) return;
-    if (window.confirm("Ziur mugimendu hau ezabatu nahi duzula? Ekintza hau ez da desegin ahal.")){
+    if (window.confirm("Ziur mugimendu hau ezabatu nahi duzula? Ekintze hau ez da desegin ahal.")){
       deleteMugimendu(id).then(closeMovForm).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
     }
   });
@@ -1031,8 +1052,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var mota = getSegValue("segMota");
     var nork = mota === "sarrera" ? "neuk" : getSegValue("segNork");
     var kopurua = parseFloat(fKopurua.value) || 0;
-    if (!fKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
-    if (kopurua <= 0){ window.alert("Kopurua 0 baino handiagoa izan behar da."); return; }
+    if (!fKategoria.value){ window.alert("Aukeratu kategorie bat."); return; }
+    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiagoe izan behar da."); return; }
     var existing = id ? movById(id) : null;
     var data = {
       data: fData.value,
@@ -1058,7 +1079,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var delBtn = e.target.closest('button[data-action="delete-kitapena"]');
     if (delBtn){
       var id = delBtn.getAttribute("data-id");
-      if (window.confirm("Ziur kitapen hau ezabatu nahi duzula?")){
+      if (window.confirm("Ziur kenkete hau ezabatu nahi duzula?")){
         deleteMugimendu(id).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
       }
       return;
@@ -1103,8 +1124,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var bal = computeBalances().aitak;
     kitatuBalanceSnapshot = bal;
     var info;
-    if (Math.abs(bal) < 0.005) info = "Dagoeneko kitatuta zaudete (0,00 €).";
-    else if (bal < 0) info = "Aitari <strong>" + fmtEuro(Math.abs(bal)) + "</strong> zor diozu.";
+    if (Math.abs(bal) < 0.005) info = "Dagoeneko kenduta zaudete (0,00 €).";
+    else if (bal < 0) info = "Aitari <strong>" + fmtEuro(Math.abs(bal)) + "</strong> zor dotset.";
     else info = "Aitak <strong>" + fmtEuro(bal) + "</strong> zor dizu.";
     document.getElementById("kitatuInfo").innerHTML = info;
     setSegValue("segKitatuMoo", "osorik");
@@ -1126,18 +1147,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var deskribapena;
     if (mode === "osorik"){
       signedKopurua = -bal;
-      deskribapena = "Kitapena (osorik)";
+      deskribapena = "Kenkete (osorik)";
     } else {
       var entered = parseFloat(document.getElementById("fKitatuKopurua").value);
       if (!entered || entered <= 0){ window.alert("Idatzi baliozko kopuru bat."); return; }
       var direction = bal < 0 ? 1 : -1;
       signedKopurua = direction * entered;
-      deskribapena = "Kitapena (zati bat)";
+      deskribapena = "Kenkete (zati bat)";
     }
     var data = {
       data: todayStr(),
       deskribapena: deskribapena,
-      kategoria: "Kitapena",
+      kategoria: "Kenkete",
       kopurua: signedKopurua,
       mota: "kitapena",
       nork: "aitak",
@@ -1145,7 +1166,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     };
     var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     setDoc(doc(db, "mugimenduak", id), data).then(closeKitatuModal).catch(function(err){
-      window.alert("Ezin izan da kitatu: " + err.message);
+      window.alert("Ezin izan da kendu: " + err.message);
     });
   });
 
@@ -1155,7 +1176,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var v = input.value.trim();
     if (!v) return;
     if (config.kategoriak.some(function(c){ return c.toLowerCase() === v.toLowerCase(); })){
-      window.alert("Kategoria hori badago jada.");
+      window.alert("Kategorie hori badago jada.");
       return;
     }
     updateConfigCategories(config.kategoriak.concat([v])).then(function(){ input.value = ""; });
@@ -1165,7 +1186,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var btn = e.target.closest("button[data-cat]");
     if (!btn) return;
     var cat = btn.getAttribute("data-cat");
-    if (window.confirm('"' + cat + '" kategoria kendu nahi duzu? Kategoria hau erabili duten mugimenduek testua gordeko dute.')){
+    if (window.confirm('"' + cat + '" kategorie kendu nahi duzu? Kategorie hau erabili duten mugimenduek testue gordeko dute.')){
       updateConfigCategories(config.kategoriak.filter(function(c){ return c !== cat; }));
     }
   });
@@ -1184,7 +1205,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function openTxantiloiForm(t){
     txantiloiForm.reset();
     if (t){
-      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloia editatu";
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloie editatu";
       tId.value = t.id;
       tIzena.value = t.izena;
       populateCategorySelect(tKategoria, t.kategoria);
@@ -1192,7 +1213,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       setSegValue("segNorkT", t.nork);
       btnTxantiloiDelete.style.display = "inline-block";
     } else {
-      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloi berria";
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloi berrie";
       tId.value = "";
       populateCategorySelect(tKategoria, "");
       setSegValue("segNorkT", "neuk");
@@ -1216,9 +1237,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   txantiloiForm.addEventListener("submit", function(e){
     e.preventDefault();
-    if (!tKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
+    if (!tKategoria.value){ window.alert("Aukeratu kategorie bat."); return; }
     var kopurua = parseFloat(tKopurua.value) || 0;
-    if (kopurua <= 0){ window.alert("Kopurua 0 baino handiagoa izan behar da."); return; }
+    if (kopurua <= 0){ window.alert("Kopurue 0 baino handiagoe izan behar da."); return; }
     var data = {
       izena: tIzena.value.trim(),
       kategoria: tKategoria.value,
@@ -1254,9 +1275,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   /* ---------- CSV export ---------- */
   document.getElementById("btnExportCsv").addEventListener("click", function(){
-    var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurua"]];
+    var motaLabelak = { gastua: "Gastue", sarrera: "Sarrere", kitapena: "Kenkete" };
+    var rows = [["Date","Deskribapene","Kategorie","Mote","Nork","Kopurue"]];
     mugimenduak.slice().sort(function(a,b){ return a.data.localeCompare(b.data); }).forEach(function(m){
-      rows.push([m.data, m.deskribapena||"", m.kategoria||"", m.mota, m.nork, String(m.kopurua).replace(".", ",")]);
+      var motaLabel = motaLabelak[m.mota] || m.mota;
+      var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
+      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ",")]);
     });
     var csv = rows.map(function(r){
       return r.map(function(cell){
@@ -1280,8 +1304,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   ensureConfigSeeded().then(function(){
     startSync();
   }).catch(function(err){
-    console.error("Errorea datuak kargatzean:", err);
-    window.alert("Errorea datuak kargatzean: " + err.message);
+    console.error("Erroree datuek kargatzean:", err);
+    window.alert("Erroree datuek kargatzean: " + err.message);
   });
 </script>
 </body>
