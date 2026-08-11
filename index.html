@@ -225,13 +225,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   </header>
 
   <nav class="tabs">
-    <button class="tab-btn active" id="tabEtxean" type="button" data-tab="etxean">Etxean</button>
+    <button class="tab-btn active" id="tabLaburpena" type="button" data-tab="laburpena">Laburpene</button>
     <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekoe</button>
     <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenek</button>
   </nav>
 
-  <!-- ETXEAN -->
-  <section class="view active" id="viewEtxean">
+  <!-- LABURPENA -->
+  <section class="view active" id="viewLaburpena">
 
     <div class="bal-grid">
       <div class="panel bal-card">
@@ -759,7 +759,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   }
 
-  /* ---------- Render: Etxean ---------- */
+  /* ---------- Render: Laburpena ---------- */
   function renderBalances(){
     var b = computeBalances();
     var elA = document.getElementById("balAitak");
@@ -841,7 +841,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     }).join("");
   }
 
-  function renderEtxean(){
+  function renderLaburpena(){
     renderBalances();
     renderMonthNav();
     renderMonthStats();
@@ -932,7 +932,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
 
   function renderAll(){
-    renderEtxean();
+    renderLaburpena();
     renderUrtekoa();
     renderEzarpenak();
   }
@@ -945,19 +945,19 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       btn.classList.add("active");
       var tab = btn.getAttribute("data-tab");
       document.getElementById("view" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
-      if (tab === "etxean") renderEtxean();
+      if (tab === "laburpena") renderLaburpena();
       if (tab === "urtekoa") renderUrtekoa();
       if (tab === "ezarpenak") renderEzarpenak();
     });
   });
 
   window.addEventListener("resize", function(){
-    if (document.getElementById("viewEtxean").classList.contains("active")) drawCategoryChart();
+    if (document.getElementById("viewLaburpena").classList.contains("active")) drawCategoryChart();
   });
 
   /* ---------- Month / year nav ---------- */
-  document.getElementById("btnMonthPrev").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, -1); renderEtxean(); });
-  document.getElementById("btnMonthNext").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, 1); renderEtxean(); });
+  document.getElementById("btnMonthPrev").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, -1); renderLaburpena(); });
+  document.getElementById("btnMonthNext").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, 1); renderLaburpena(); });
   document.getElementById("btnYearPrev").addEventListener("click", function(){ visibleYear--; renderUrtekoa(); });
   document.getElementById("btnYearNext").addEventListener("click", function(){ visibleYear++; renderUrtekoa(); });
 
