@@ -356,7 +356,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <div class="toolbar">
       <h3>Zorrak</h3>
     </div>
-    <p class="settings-hint">Norbaitekin partekatutako gastuek, pertsonaka batuta. Mugimendu bat gehitzean adierazi nortzuekin partekatu dozun.</p>
+    <p class="settings-hint">Norbaitekin partekatutako gastuek, pertsonaka batuta. Mugimendu bat gehitzean adierazi zeinekaz partekatu dozun.</p>
     <div id="zorrakList"></div>
   </section>
 
@@ -411,7 +411,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field" id="fieldShare">
-        <label>Norekin partekatu? (aukerakoa)</label>
+        <label>Nogaz partekatuzu? (aukerakoa)</label>
         <div id="shareRows"></div>
         <button type="button" class="btn btn-small" id="btnAddShareRow">+ Pertsona gehitu</button>
         <div class="hint" id="shareHint">Kopurue hutsik badau, berdinbanatuta kalkulauko da.</div>
@@ -1047,17 +1047,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var el = document.getElementById("zorrakList");
     var people = computePersonBalances();
     if (!people.length){
-      el.innerHTML = '<div class="panel empty">Oraindik ez dozu inogaz gasturik partekatu.</div>';
+      el.innerHTML = '<div class="panel empty">Oiñekarren ez dozu inogaz gasturik partekatu.</div>';
       return;
     }
     el.innerHTML = people.map(function(p){
       var settled = Math.abs(p.owed) < 0.005;
       var initial = (p.izena.charAt(0) || "?").toUpperCase();
       var amountHtml = settled
-        ? '<span class="pos">Kitatuta</span>'
+        ? '<span class="pos">Kenduta</span>'
         : (p.owed > 0
             ? '<span class="pos">' + fmtEuro(p.owed) + ' zor dotzu</span>'
-            : '<span class="neg">' + fmtEuro(Math.abs(p.owed)) + ' zor deutzazu</span>');
+            : '<span class="neg">' + fmtEuro(Math.abs(p.owed)) + ' zor dotzezu</span>');
       var btn = settled ? '' : '<button class="btn btn-small btn-coral" data-action="zor-kendu" data-izena="' + escapeHtml(p.izena) + '" data-owed="' + p.owed + '" type="button">Kendu</button>';
       return '<div class="panel person-card">' +
         '<div class="avatar">' + escapeHtml(initial) + '</div>' +
@@ -1169,7 +1169,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     row.innerHTML =
       '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
       '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
-      '<button type="button" class="share-remove" aria-label="Kendu">×</button>';
+      '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
     row.querySelector(".share-amount").value = kopurua || "";
     row.querySelector(".share-name").addEventListener("input", updateShareDefaults);
@@ -1390,7 +1390,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var info;
     if (Math.abs(owed) < 0.005) info = "Dana kenduta dau (0,00 €).";
     else if (owed > 0) info = izena + " <strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
-    else info = izena + "-ri <strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor deutzazu.";
+    else info = izena + "-ri <strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor dotzezu.";
     document.getElementById("zorKenduInfo").innerHTML = info;
     setSegValue("segZorKenduMoo", "osorik");
     document.getElementById("zorKenduPartialField").style.display = "none";
