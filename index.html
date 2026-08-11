@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2f6f62">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Poltsiko">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<title>Poltsiko Begie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf6ef;
+  --panel:#ffffff;
+  --panel-border:#e7ddc7;
+  --line-soft:rgba(43,36,26,0.07);
+  --ink:#2b241a;
+  --muted:#8a7f6b;
+  --accent:#2f6f62;
+  --accent-bright:#3f8c7a;
+  --accent-soft:rgba(47,111,98,0.10);
+  --coral:#d1673f;
+  --coral-soft:rgba(209,103,63,0.12);
+  --positive:#2f7a45;
+  --negative:#b8452f;
+  --radius:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(760px 480px at 10% -10%, rgba(47,111,98,0.07), transparent 60%),
+    radial-gradient(700px 460px at 100% 0%, rgba(209,103,63,0.06), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;letter-spacing:0.005em;font-weight:600}
+.app{max-width:640px;margin:0 auto;padding:18px 16px calc(56px + env(safe-area-inset-bottom));padding-top:calc(18px + env(safe-area-inset-top))}
+
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.topbar .mark{width:42px;height:42px;flex:none}
+.topbar h1{font-size:1.42rem;color:var(--accent)}
+.topbar p{margin:2px 0 0;font-size:0.8rem;color:var(--muted)}
+
+.tabs{display:flex;gap:6px;background:rgba(43,36,26,0.05);border-radius:14px;padding:4px;margin-bottom:18px}
+.tab-btn{flex:1;border:none;background:transparent;padding:9px 6px;border-radius:11px;font-family:'Inter',sans-serif;font-weight:700;font-size:0.82rem;color:var(--muted);cursor:pointer}
+.tab-btn.active{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(43,36,26,0.12)}
+
+.view{display:none}
+.view.active{display:block}
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:var(--radius);
+  box-shadow:0 1px 2px rgba(43,36,26,0.04);
+}
+
+.pos{color:var(--positive)}
+.neg{color:var(--negative)}
+
+.bal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.bal-card{padding:15px 15px 13px;display:flex;flex-direction:column;gap:3px}
+.bal-card .label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:700}
+.bal-card .value{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bal-card .sub{font-size:0.76rem;color:var(--muted)}
+.bal-card .btn-settle{margin-top:8px;align-self:flex-start}
+.legend-hint{font-size:0.7rem;color:var(--muted);text-align:center;margin:0 0 16px}
+
+.btn{
+  font-family:'Inter',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;
+  border:1px solid var(--panel-border);border-radius:12px;padding:9px 14px;color:var(--ink);
+  background:var(--panel);transition:transform 0.05s ease, background 0.15s ease;
+}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--accent);color:#fff;border-color:transparent;font-weight:800}
+.btn-ghost{background:transparent}
+.btn-danger{color:var(--negative);border-color:rgba(184,69,47,0.35)}
+.btn-small{padding:6px 10px;font-size:0.76rem;border-radius:9px}
+.btn-coral{background:var(--coral);color:#fff;border-color:transparent}
+
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin:20px 0 12px}
+.month-nav h2{font-size:1.05rem;color:var(--ink)}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--panel-border);background:var(--panel);color:var(--ink);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.icon-btn:active{transform:scale(0.94)}
+
+.mini-stats{display:flex;gap:8px;margin-bottom:16px}
+.mini-stat{flex:1;padding:10px 8px;text-align:center}
+.mini-stat .v{font-weight:800;font-size:0.92rem;font-variant-numeric:tabular-nums}
+.mini-stat .l{font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;margin-top:2px}
+
+.chart-card{padding:16px 14px 14px;margin-bottom:16px}
+.chart-card h3{font-size:0.92rem;color:var(--ink);margin-bottom:10px}
+.chart-empty{font-size:0.82rem;color:var(--muted);text-align:center;padding:18px 0;display:none}
+canvas#catChart{display:block;width:100%}
+
+.tmpl-row-wrap{margin-bottom:16px}
+.tmpl-row-wrap h3{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;font-family:'Inter',sans-serif;font-weight:700}
+.tmpl-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.tmpl-chip{flex:none;padding:9px 13px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--panel-border);color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.tmpl-chip:active{transform:scale(0.96)}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 12px}
+.toolbar h3{font-size:0.72rem;color:var(--muted);font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+
+.mov-list{display:flex;flex-direction:column;gap:8px}
+.mov-card{display:flex;align-items:center;gap:11px;padding:11px 14px;position:relative;cursor:pointer}
+.mov-card[data-mota="kitapena"]{cursor:default}
+.mov-date{font-size:0.68rem;color:var(--muted);width:36px;flex:none;text-align:center;line-height:1.25;text-transform:uppercase}
+.mov-info{flex:1;min-width:0}
+.mov-desc{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.chip{font-size:0.68rem;background:rgba(43,36,26,0.06);color:var(--muted);padding:3px 9px;border-radius:99px;font-weight:600}
+.badge{font-size:0.66rem;font-weight:800;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.badge-neuk{background:var(--accent-soft);color:var(--accent)}
+.badge-aitak{background:var(--coral-soft);color:var(--coral)}
+.mov-amount{font-weight:800;font-size:0.92rem;flex:none;font-variant-numeric:tabular-nums}
+.mov-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(43,36,26,0.08);color:var(--muted);font-size:14px;cursor:pointer;line-height:1}
+
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:0.88rem}
+
+.year-nav{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:16px}
+.year-nav h2{font-size:1.15rem}
+.year-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.year-table th,.year-table td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+.year-table th:first-child,.year-table td:first-child{text-align:left;font-variant-numeric:normal}
+.year-table th{color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.03em;font-weight:700}
+.year-table tr.current td{font-weight:800}
+.table-card{padding:14px;margin-bottom:18px;overflow-x:auto}
+.table-card h3{font-size:0.92rem;margin-bottom:8px}
+
+.settings-section{margin-bottom:24px}
+.settings-section h3{font-size:1rem;margin-bottom:10px}
+.settings-hint{font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.45}
+.chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip-removable{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);border:1px solid var(--panel-border);border-radius:99px;padding:6px 6px 6px 13px;font-size:0.82rem;font-weight:600;color:var(--accent)}
+.chip-removable button{border:none;background:rgba(43,36,26,0.1);color:var(--ink);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1}
+.add-row{display:flex;gap:8px}
+.add-row input{flex:1}
+.tmpl-list-item{display:flex;align-items:center;gap:10px;padding:11px 14px;margin-bottom:8px}
+.tmpl-list-item .info{flex:1;min-width:0}
+.tmpl-list-item .name{font-weight:700;font-size:0.9rem}
+.tmpl-list-item .meta{font-size:0.76rem;color:var(--muted);margin-top:2px}
+.seed-info{font-size:0.78rem;color:var(--muted);padding:12px 14px;line-height:1.5}
+
+footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opacity:0.85;line-height:1.6}
+
+.field{margin-bottom:13px}
+.field label{display:block;font-size:0.74rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.03em;font-weight:700}
+.field input[type="text"],
+.field input[type="number"],
+.field input[type="date"],
+.field select{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--panel-border);
+  background:#fdfbf6;color:var(--ink);font-family:inherit;font-size:0.95rem;
+}
+.field select{appearance:auto}
+.seg{display:flex;border:1px solid var(--panel-border);border-radius:12px;overflow:hidden}
+.seg button{flex:1;padding:9px;border:none;background:#fdfbf6;color:var(--ink);font-family:'Inter',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer}
+.seg button:not(:last-child){border-right:1px solid var(--panel-border)}
+.seg button.active{background:var(--accent);color:#fff}
+.seg-disabled{opacity:0.4;pointer-events:none}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions .btn{flex:1;text-align:center}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(43,36,26,0.35);backdrop-filter:blur(2px);
+  display:flex;align-items:flex-end;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity 0.15s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{
+  width:100%;max-width:640px;max-height:92vh;overflow-y:auto;
+  background:var(--panel);border:1px solid var(--panel-border);border-radius:20px 20px 0 0;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(16px);transition:transform 0.15s ease;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal h2{color:var(--accent);font-size:1.1rem;margin-bottom:16px}
+.modal p.info-line{font-size:0.92rem;line-height:1.5;margin:0 0 16px}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,140%);
+  background:var(--ink);color:#fdfbf6;padding:12px 16px;border-radius:12px;display:flex;align-items:center;gap:16px;
+  font-size:0.85rem;transition:transform 0.2s ease;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,0.22);max-width:90vw;
+}
+.toast.show{transform:translate(-50%,0)}
+.toast button{background:none;border:none;color:#8fd4bd;font-weight:800;cursor:pointer;font-size:0.85rem;flex:none}
+
+@media (min-width:520px){
+  .mini-stats{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <header class="topbar">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M15 40 Q50 20 85 40" stroke="#2f6f62" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.45"/>
+      <path d="M20 55 Q50 33 80 55 Q50 77 20 55 Z" fill="#2f6f62"/>
+      <circle cx="50" cy="55" r="12.5" fill="#d1673f"/>
+      <circle cx="50" cy="55" r="5.5" fill="#20302a"/>
+      <circle cx="53.2" cy="51.6" r="2.2" fill="#faf6ef"/>
+      <path d="M22 60 L26.5 88 Q27.3 92 32 92 L68 92 Q72.7 92 73.5 88 L78 60" stroke="#2f6f62" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+    </svg>
+    <div>
+      <h1>Poltsiko Begie</h1>
+      <p>Aitak pagetakoak eta neure gastuak, leku berean</p>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" id="tabEtxean" type="button" data-tab="etxean">Etxean</button>
+    <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekoa</button>
+    <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenak</button>
+  </nav>
+
+  <!-- ETXEAN -->
+  <section class="view active" id="viewEtxean">
+
+    <div class="bal-grid">
+      <div class="panel bal-card">
+        <div class="label">Aitak pagetakoak</div>
+        <div class="value" id="balAitak">—</div>
+        <div class="sub" id="balAitakSub"></div>
+        <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kitatu</button>
+      </div>
+      <div class="panel bal-card">
+        <div class="label">Neure gastuek</div>
+        <div class="value" id="balNeure">—</div>
+        <div class="sub">Sarrerak ken gastuak</div>
+      </div>
+    </div>
+    <div class="legend-hint">Positiboa = zure alde &nbsp;·&nbsp; Negatiboa = zor duzu</div>
+
+    <div class="month-nav">
+      <button class="icon-btn" id="btnMonthPrev" type="button" aria-label="Aurreko hilabetea">‹</button>
+      <h2 id="monthLabel">—</h2>
+      <button class="icon-btn" id="btnMonthNext" type="button" aria-label="Hurrengo hilabetea">›</button>
+    </div>
+
+    <div class="mini-stats">
+      <div class="panel mini-stat"><div class="v neg" id="statGastuak">—</div><div class="l">Neure gastuak</div></div>
+      <div class="panel mini-stat"><div class="v pos" id="statSarrerak">—</div><div class="l">Sarrerak</div></div>
+      <div class="panel mini-stat"><div class="v" id="statAitakGastuak">—</div><div class="l">Aitak ordainduta</div></div>
+    </div>
+
+    <div class="panel chart-card">
+      <h3 id="catChartTitle">Kategoriaka</h3>
+      <div class="chart-empty" id="catChartEmpty">Hilabete honetan ez dago gasturik</div>
+      <canvas id="catChart"></canvas>
+    </div>
+
+    <div class="tmpl-row-wrap" id="templateRowWrap" style="display:none">
+      <h3>Errepikakoak</h3>
+      <div class="tmpl-row" id="templateRow"></div>
+    </div>
+
+    <div class="toolbar">
+      <h3 id="movCount">Mugimenduak</h3>
+      <button class="btn btn-primary" id="btnBerria" type="button">+ Berria</button>
+    </div>
+
+    <section class="mov-list" id="movList" aria-label="Mugimenduak"></section>
+  </section>
+
+  <!-- URTEKOA -->
+  <section class="view" id="viewUrtekoa">
+    <div class="year-nav">
+      <button class="icon-btn" id="btnYearPrev" type="button" aria-label="Aurreko urtea">‹</button>
+      <h2 id="yearLabel">—</h2>
+      <button class="icon-btn" id="btnYearNext" type="button" aria-label="Hurrengo urtea">›</button>
+    </div>
+
+    <div class="panel table-card">
+      <h3>Hilabeteka</h3>
+      <table class="year-table">
+        <thead><tr><th>Hilabetea</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <tbody id="monthGridBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel table-card">
+      <h3>Urteka</h3>
+      <table class="year-table">
+        <thead><tr><th>Urtea</th><th>Neure</th><th>Aitak</th></tr></thead>
+        <tbody id="yearGridBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EZARPENAK -->
+  <section class="view" id="viewEzarpenak">
+
+    <div class="settings-section">
+      <h3>Kategoriak</h3>
+      <p class="settings-hint">Zure kategoria zerrenda. Gehitu edo kendu nahi dituzunak.</p>
+      <div class="chip-list" id="categoryChips"></div>
+      <div class="add-row">
+        <input type="text" id="newCategoryInput" placeholder="Kategoria berria">
+        <button class="btn btn-primary btn-small" id="btnAddCategory" type="button">Gehitu</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Errepikakoak</h3>
+      <p class="settings-hint">Hileroko gastu finkoak (alokairua, harpidetzak...) sakatze bakarrarekin erregistratzeko.</p>
+      <div id="templateList"></div>
+      <button class="btn btn-primary btn-small" id="btnAddTemplate" type="button">+ Txantiloi berria</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Datuak</h3>
+      <button class="btn" id="btnExportCsv" type="button">CSV esportatu</button>
+      <div class="panel seed-info" id="seedInfo" style="margin-top:12px"></div>
+    </div>
+
+  </section>
+
+  <footer>
+    Datuak hodeian sinkronizatuta (Firebase). Esteka hau duen edonork ikusi eta editatu ditzake.<br>
+    Poltsiko Begie &mdash; aitak pagetakoak eta neure gastuen kontrola.
+  </footer>
+</div>
+
+<!-- Modal: mugimendu -->
+<div class="modal-overlay" id="modalMugimendu">
+  <div class="modal">
+    <h2 id="modalMugimenduTitle">Mugimendu berria</h2>
+    <form id="movForm">
+      <input type="hidden" id="fId">
+
+      <div class="field">
+        <label>Mota</label>
+        <div class="seg" id="segMota">
+          <button type="button" data-value="gastua" class="active">Gastua</button>
+          <button type="button" data-value="sarrera">Sarrera</button>
+        </div>
+      </div>
+
+      <div class="field" id="fieldNork">
+        <label>Nork ordaindu</label>
+        <div class="seg" id="segNork">
+          <button type="button" data-value="neuk" class="active">Neuk</button>
+          <button type="button" data-value="aitak">Aitak</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fData">Data</label>
+        <input type="date" id="fData" required>
+      </div>
+
+      <div class="field">
+        <label for="fDeskribapena">Deskribapena</label>
+        <input type="text" id="fDeskribapena" list="merchantList" placeholder="Ej: Eroski" required>
+        <datalist id="merchantList"></datalist>
+      </div>
+
+      <div class="field">
+        <label for="fKategoria">Kategoria</label>
+        <select id="fKategoria" required></select>
+      </div>
+
+      <div class="field">
+        <label for="fKopurua">Kopurua (&euro;)</label>
+        <input type="number" id="fKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btnMovDelete" style="display:none">Ezabatu</button>
+        <button type="button" class="btn btn-ghost" id="btnMovCancel">Utzi</button>
+        <button type="submit" class="btn btn-primary">Gorde</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: kitatu -->
+<div class="modal-overlay" id="modalKitatu">
+  <div class="modal">
+    <h2>Aitak pagetakoak kitatu</h2>
+    <p class="info-line" id="kitatuInfo"></p>
+
+    <div class="field">
+      <div class="seg" id="segKitatuMoo">
+        <button type="button" data-value="osorik" class="active">Osorik kitatu</button>
+        <button type="button" data-value="zati">Beste kopuru bat</button>
+      </div>
+    </div>
+
+    <div class="field" id="kitatuPartialField" style="display:none">
+      <label for="fKitatuKopurua">Kopurua (&euro;)</label>
+      <input type="number" id="fKitatuKopurua" min="0.01" step="0.01" inputmode="decimal">
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="btnKitatuCancel">Utzi</button>
+      <button type="button" class="btn btn-coral" id="btnKitatuConfirm">Kitatu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: txantiloi -->
+<div class="modal-overlay" id="modalTxantiloi">
+  <div class="modal">
+    <h2 id="modalTxantiloiTitle">Txantiloi berria</h2>
+    <form id="txantiloiForm">
+      <input type="hidden" id="tId">
+
+      <div class="field">
+        <label for="tIzena">Izena</label>
+        <input type="text" id="tIzena" placeholder="Ej: Alokairua" required>
+      </div>
+
+      <div class="field">
+        <label for="tKategoria">Kategoria</label>
+        <select id="tKategoria" required></select>
+      </div>
+
+      <div class="field">
+        <label for="tKopurua">Kopurua (&euro;)</label>
+        <input type="number" id="tKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+      </div>
+
+      <div class="field">
+        <label>Nork ordaintzen duen</label>
+        <div class="seg" id="segNorkT">
+          <button type="button" data-value="neuk" class="active">Neuk</button>
+          <button type="button" data-value="aitak">Aitak</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btnTxantiloiDelete" style="display:none">Ezabatu</button>
+        <button type="button" class="btn btn-ghost" id="btnTxantiloiCancel">Utzi</button>
+        <button type="submit" class="btn btn-primary">Gorde</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastMsg"></span>
+  <button type="button" id="btnToastUndo">Desegin</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, deleteDoc, getDoc, onSnapshot,
+    enableIndexedDbPersistence
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
+  /* ---------- Firebase setup ---------- */
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID09"
+  };
+
+  var fbApp = initializeApp(firebaseConfig);
+  var db = getFirestore(fbApp);
+  enableIndexedDbPersistence(db).catch(function(e){ /* multiple tabs or unsupported browser: ignore, Firestore still works online */ });
+
+  /* ---------- Constants ---------- */
+  var DEFAULT_KATEGORIAK = ["Janaria","Alokairua","Garraioa","Etxeko gastuak","Pintxopo","Kanpoan jan","Bidaiak","Osasuna","Teknologia","Chatgpt","Claude","Mus","Bestelakoak"];
+  var HASIERAKO_AITAK = -250.00;
+  var HASIERAKO_NEURE = -1000.00;
+  var HASIERAKO_DATA = "2026-08-11";
+  var CHART_COLORS = ["#2a78d6","#eb6834","#1baf7a","#eda100","#e87ba4","#008300","#4a3aa7","#e34948"];
+  var MESE_LUZEAK = ["Urtarrila","Otsaila","Martxoa","Apirila","Maiatza","Ekaina","Uztaila","Abuztua","Iraila","Urria","Azaroa","Abendua"];
+  var MESE_LABURRAK = ["urt","ots","mar","api","mai","eka","uzt","abu","ira","urr","aza","abe"];
+
+  /* ---------- State ---------- */
+  var mugimenduak = [];
+  var txantiloiak = [];
+  var config = { kategoriak: DEFAULT_KATEGORIAK.slice(), aitakHasiera: HASIERAKO_AITAK, neureHasiera: HASIERAKO_NEURE, hasierakoData: HASIERAKO_DATA };
+  var visibleMonth = todayStr().slice(0,7);
+  var visibleYear = parseInt(todayStr().slice(0,4), 10);
+  var categoryManuallySet = false;
+  var kitatuBalanceSnapshot = 0;
+
+  /* ---------- Firestore data layer ---------- */
+  function ensureConfigSeeded(){
+    var ref = doc(db, "meta", "config");
+    return getDoc(ref).then(function(snap){
+      if (snap.exists()) return;
+      return setDoc(ref, {
+        kategoriak: DEFAULT_KATEGORIAK,
+        aitakHasiera: HASIERAKO_AITAK,
+        neureHasiera: HASIERAKO_NEURE,
+        hasierakoData: HASIERAKO_DATA
+      });
+    });
+  }
+
+  function startSync(){
+    onSnapshot(doc(db, "meta", "config"), function(snap){
+      if (snap.exists()){
+        var d = snap.data();
+        config.kategoriak = d.kategoriak || DEFAULT_KATEGORIAK.slice();
+        config.aitakHasiera = typeof d.aitakHasiera === "number" ? d.aitakHasiera : HASIERAKO_AITAK;
+        config.neureHasiera = typeof d.neureHasiera === "number" ? d.neureHasiera : HASIERAKO_NEURE;
+        config.hasierakoData = d.hasierakoData || HASIERAKO_DATA;
+      }
+      renderAll();
+    }, function(err){ console.error("Errorea config sinkronizatzean:", err); });
+
+    onSnapshot(collection(db, "mugimenduak"), function(snapshot){
+      mugimenduak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      renderAll();
+    }, function(err){ console.error("Errorea mugimenduak sinkronizatzean:", err); });
+
+    onSnapshot(collection(db, "txantiloiak"), function(snapshot){
+      txantiloiak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      renderAll();
+    }, function(err){ console.error("Errorea txantiloiak sinkronizatzean:", err); });
+  }
+
+  function saveMugimendu(id, data){
+    var targetId = id || ("m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7));
+    return setDoc(doc(db, "mugimenduak", targetId), data);
+  }
+  function deleteMugimendu(id){ return deleteDoc(doc(db, "mugimenduak", id)); }
+
+  function saveTxantiloi(id, data){
+    var targetId = id || ("t" + Date.now().toString(36) + Math.random().toString(36).slice(2,7));
+    return setDoc(doc(db, "txantiloiak", targetId), data);
+  }
+  function deleteTxantiloi(id){ return deleteDoc(doc(db, "txantiloiak", id)); }
+
+  function updateConfigCategories(list){
+    return setDoc(doc(db, "meta", "config"), { kategoriak: list }, { merge: true });
+  }
+
+  /* ---------- Helpers ---------- */
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
+  function currentMonthKey(){ return todayStr().slice(0,7); }
+
+  function fmtEuro(n, forceSign){
+    n = Number(n) || 0;
+    var neg = n < -0.0001;
+    var abs = Math.abs(Math.round(n * 100) / 100);
+    var str = abs.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (neg) return "-" + str + " €";
+    if (forceSign) return "+" + str + " €";
+    return str + " €";
+  }
+
+  function fmtDataLaburra(iso){
+    var parts = iso.split("-");
+    var d = parseInt(parts[2], 10), m = parseInt(parts[1], 10) - 1;
+    return d + "\n" + MESE_LABURRAK[m];
+  }
+
+  function monthLabel(key){
+    var y = key.slice(0,4), m = parseInt(key.slice(5,7), 10);
+    return MESE_LUZEAK[m-1] + " " + y;
+  }
+
+  function shiftMonth(key, delta){
+    var y = parseInt(key.slice(0,4), 10), m = parseInt(key.slice(5,7), 10);
+    m += delta;
+    while (m < 1) { m += 12; y--; }
+    while (m > 12) { m -= 12; y++; }
+    return y + "-" + String(m).padStart(2, "0");
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+    });
+  }
+
+  function truncateLabel(str, n){
+    str = String(str);
+    return str.length > n ? str.slice(0, n-1) + "…" : str;
+  }
+
+  function movById(id){ return mugimenduak.find(function(m){ return m.id === id; }); }
+
+  /* ---------- Ledger math ---------- */
+  function effectOnNeure(m){
+    if (m.nork !== "neuk") return 0;
+    return m.mota === "sarrera" ? Number(m.kopurua) : -Number(m.kopurua);
+  }
+  function effectOnAitak(m){
+    if (m.nork !== "aitak") return 0;
+    return m.mota === "kitapena" ? Number(m.kopurua) : -Number(m.kopurua);
+  }
+  function computeBalances(){
+    var neure = config.neureHasiera, aitak = config.aitakHasiera;
+    mugimenduak.forEach(function(m){ neure += effectOnNeure(m); aitak += effectOnAitak(m); });
+    return { neure: neure, aitak: aitak };
+  }
+
+  /* ---------- Seg control helper ---------- */
+  function setupSeg(containerId, onChange){
+    var el = document.getElementById(containerId);
+    Array.prototype.forEach.call(el.querySelectorAll("button"), function(btn){
+      btn.addEventListener("click", function(){
+        Array.prototype.forEach.call(el.querySelectorAll("button"), function(b){ b.classList.remove("active"); });
+        btn.classList.add("active");
+        if (onChange) onChange(btn.getAttribute("data-value"));
+      });
+    });
+  }
+  function getSegValue(containerId){
+    var active = document.querySelector("#" + containerId + " button.active");
+    return active ? active.getAttribute("data-value") : null;
+  }
+  function setSegValue(containerId, value){
+    var el = document.getElementById(containerId);
+    Array.prototype.forEach.call(el.querySelectorAll("button"), function(b){
+      b.classList.toggle("active", b.getAttribute("data-value") === value);
+    });
+  }
+
+  /* ---------- Category select population ---------- */
+  function populateCategorySelect(sel, current){
+    var html = '<option value="" disabled ' + (current ? "" : "selected") + '>Aukeratu kategoria</option>';
+    config.kategoriak.forEach(function(k){
+      html += '<option value="' + escapeHtml(k) + '"' + (k === current ? " selected" : "") + '>' + escapeHtml(k) + '</option>';
+    });
+    sel.innerHTML = html;
+  }
+
+  /* ---------- Merchant memory ---------- */
+  function buildMerchantMap(){
+    var map = {};
+    var sorted = mugimenduak.slice().sort(function(a,b){
+      return (a.data + (a.createdAt||"")).localeCompare(b.data + (b.createdAt||""));
+    });
+    sorted.forEach(function(m){
+      if (m.mota === "kitapena") return;
+      var key = (m.deskribapena||"").trim().toLowerCase();
+      if (!key) return;
+      map[key] = m.kategoria;
+    });
+    return map;
+  }
+
+  function updateMerchantDatalist(){
+    var seen = {}, list = [];
+    mugimenduak.slice().sort(function(a,b){ return (b.data+(b.createdAt||"")).localeCompare(a.data+(a.createdAt||"")); })
+      .forEach(function(m){
+        var key = (m.deskribapena||"").trim();
+        if (!key || seen[key.toLowerCase()]) return;
+        seen[key.toLowerCase()] = true;
+        list.push(key);
+      });
+    document.getElementById("merchantList").innerHTML = list.map(function(d){ return '<option value="'+escapeHtml(d)+'">'; }).join("");
+  }
+
+  /* ---------- Canvas: category chart ---------- */
+  function roundRect(ctx, x, y, w, h, r){
+    if (w < r*2) r = Math.max(0, w/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  function getCategoryTotals(monthKey){
+    var totals = {};
+    mugimenduak.forEach(function(m){
+      if (m.mota !== "gastua") return;
+      if (monthKeyOf(m.data) !== monthKey) return;
+      totals[m.kategoria] = (totals[m.kategoria] || 0) + Number(m.kopurua);
+    });
+    var list = Object.keys(totals).map(function(k){ return { kategoria: k, kopurua: totals[k] }; });
+    list.sort(function(a,b){ return b.kopurua - a.kopurua; });
+    return list;
+  }
+
+  function categoryColor(kategoria){
+    var idx = config.kategoriak.indexOf(kategoria);
+    if (idx < 0) idx = 0;
+    return CHART_COLORS[idx % CHART_COLORS.length];
+  }
+
+  function drawCategoryChart(){
+    var canvas = document.getElementById("catChart");
+    var wrap = canvas.parentElement;
+    var data = getCategoryTotals(visibleMonth);
+    var emptyEl = document.getElementById("catChartEmpty");
+
+    if (!data.length){
+      emptyEl.style.display = "block";
+      canvas.style.display = "none";
+      return;
+    }
+    emptyEl.style.display = "none";
+    canvas.style.display = "block";
+
+    var dpr = window.devicePixelRatio || 1;
+    var cssW = wrap.clientWidth;
+    var rowH = 30;
+    var cssH = Math.max(40, data.length * rowH + 6);
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width = cssW + "px";
+    canvas.style.height = cssH + "px";
+    var ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cssW,cssH);
+
+    var maxV = data[0].kopurua;
+    var labelW = 92, valueW = 66;
+    var barAreaW = Math.max(20, cssW - labelW - valueW);
+    ctx.font = "600 12px Inter, sans-serif";
+    ctx.textBaseline = "middle";
+
+    data.forEach(function(d, i){
+      var y = 3 + i * rowH;
+      var barH = 15;
+      var w = maxV > 0 ? Math.max(4, (d.kopurua / maxV) * barAreaW) : 4;
+
+      ctx.fillStyle = "#2b241a";
+      ctx.textAlign = "left";
+      ctx.fillText(truncateLabel(d.kategoria, 13), 0, y + barH/2);
+
+      ctx.fillStyle = "rgba(43,36,26,0.06)";
+      roundRect(ctx, labelW, y, barAreaW, barH, 4); ctx.fill();
+
+      ctx.fillStyle = categoryColor(d.kategoria);
+      roundRect(ctx, labelW, y, w, barH, 4); ctx.fill();
+
+      ctx.fillStyle = "#8a7f6b";
+      ctx.font = "600 11px Inter, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(fmtEuro(d.kopurua), labelW + barAreaW + 8, y + barH/2);
+      ctx.font = "600 12px Inter, sans-serif";
+    });
+  }
+
+  /* ---------- Render: Etxean ---------- */
+  function renderBalances(){
+    var b = computeBalances();
+    var elA = document.getElementById("balAitak");
+    var elN = document.getElementById("balNeure");
+    elA.textContent = fmtEuro(b.aitak, true);
+    elA.className = "value " + (b.aitak >= -0.005 ? "pos" : "neg");
+    elN.textContent = fmtEuro(b.neure, true);
+    elN.className = "value " + (b.neure >= -0.005 ? "pos" : "neg");
+
+    var sub;
+    if (Math.abs(b.aitak) < 0.005) sub = "Kitatuta zaudete";
+    else if (b.aitak < 0) sub = "Aitari zor diozu";
+    else sub = "Aitak zor dizu";
+    document.getElementById("balAitakSub").textContent = sub;
+  }
+
+  function renderMonthNav(){
+    document.getElementById("monthLabel").textContent = monthLabel(visibleMonth);
+  }
+
+  function renderMonthStats(){
+    var neureGastuak = 0, sarrerak = 0, aitakGastuak = 0;
+    mugimenduak.forEach(function(m){
+      if (monthKeyOf(m.data) !== visibleMonth) return;
+      if (m.nork === "neuk" && m.mota === "gastua") neureGastuak += Number(m.kopurua);
+      if (m.nork === "neuk" && m.mota === "sarrera") sarrerak += Number(m.kopurua);
+      if (m.nork === "aitak" && m.mota === "gastua") aitakGastuak += Number(m.kopurua);
+    });
+    document.getElementById("statGastuak").textContent = fmtEuro(neureGastuak);
+    document.getElementById("statSarrerak").textContent = fmtEuro(sarrerak);
+    document.getElementById("statAitakGastuak").textContent = fmtEuro(aitakGastuak);
+  }
+
+  function renderCategoryChartSection(){
+    document.getElementById("catChartTitle").textContent = "Kategoriaka — " + monthLabel(visibleMonth);
+    drawCategoryChart();
+  }
+
+  function renderTemplateRow(){
+    var wrap = document.getElementById("templateRowWrap");
+    if (!txantiloiak.length){ wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    document.getElementById("templateRow").innerHTML = txantiloiak.map(function(t){
+      return '<button type="button" class="tmpl-chip" data-id="' + t.id + '">🔁 ' + escapeHtml(t.izena) + ' · ' + fmtEuro(t.kopurua) + '</button>';
+    }).join("");
+  }
+
+  function renderMovList(){
+    var el = document.getElementById("movList");
+    var countEl = document.getElementById("movCount");
+    var monthMovs = mugimenduak.filter(function(m){ return monthKeyOf(m.data) === visibleMonth; });
+    monthMovs.sort(function(a,b){ return (b.data+(b.createdAt||"")).localeCompare(a.data+(a.createdAt||"")); });
+    countEl.textContent = "Mugimenduak (" + monthMovs.length + ")";
+
+    if (!monthMovs.length){
+      el.innerHTML = '<div class="panel empty">Hilabete honetan ez dago mugimendurik.</div>';
+      return;
+    }
+
+    el.innerHTML = monthMovs.map(function(m){
+      var effect = m.nork === "aitak" ? effectOnAitak(m) : effectOnNeure(m);
+      var isKitapena = m.mota === "kitapena";
+      var badge = isKitapena ? '<span class="badge badge-aitak">Kitatuta</span>'
+        : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
+      var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabatu" type="button">×</button>' : '';
+      return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
+        '<div class="mov-date">' + fmtDataLaburra(m.data).replace("\n","<br>") + '</div>' +
+        '<div class="mov-info">' +
+          '<div class="mov-desc">' + escapeHtml(m.deskribapena || "(izenik gabe)") + '</div>' +
+          '<div class="mov-meta"><span class="chip">' + escapeHtml(m.kategoria || "—") + '</span>' + badge + '</div>' +
+        '</div>' +
+        '<div class="mov-amount ' + (effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(effect, true) + '</div>' +
+        delBtn +
+      '</div>';
+    }).join("");
+  }
+
+  function renderEtxean(){
+    renderBalances();
+    renderMonthNav();
+    renderMonthStats();
+    renderCategoryChartSection();
+    renderTemplateRow();
+    renderMovList();
+  }
+
+  /* ---------- Render: Urtekoa ---------- */
+  function renderUrtekoa(){
+    document.getElementById("yearLabel").textContent = String(visibleYear);
+    var curKey = currentMonthKey();
+    var rows = "";
+    for (var mo = 1; mo <= 12; mo++){
+      var key = visibleYear + "-" + String(mo).padStart(2, "0");
+      var neureNet = 0, aitakNet = 0;
+      mugimenduak.forEach(function(m){
+        if (monthKeyOf(m.data) === key){ neureNet += effectOnNeure(m); aitakNet += effectOnAitak(m); }
+      });
+      rows += '<tr class="' + (key === curKey ? "current" : "") + '">' +
+        '<td>' + MESE_LUZEAK[mo-1] + '</td>' +
+        '<td class="' + (neureNet >= 0 ? "pos" : "neg") + '">' + fmtEuro(neureNet, true) + '</td>' +
+        '<td class="' + (aitakNet >= 0 ? "pos" : "neg") + '">' + fmtEuro(aitakNet, true) + '</td>' +
+      '</tr>';
+    }
+    document.getElementById("monthGridBody").innerHTML = rows;
+
+    var years = {};
+    mugimenduak.forEach(function(m){
+      var y = m.data.slice(0,4);
+      years[y] = years[y] || { neure: 0, aitak: 0 };
+      years[y].neure += effectOnNeure(m);
+      years[y].aitak += effectOnAitak(m);
+    });
+    var yearKeys = Object.keys(years).sort();
+    if (!yearKeys.length) yearKeys = [String(visibleYear)];
+    document.getElementById("yearGridBody").innerHTML = yearKeys.map(function(y){
+      var v = years[y] || { neure: 0, aitak: 0 };
+      return '<tr><td>' + y + '</td>' +
+        '<td class="' + (v.neure >= 0 ? "pos" : "neg") + '">' + fmtEuro(v.neure, true) + '</td>' +
+        '<td class="' + (v.aitak >= 0 ? "pos" : "neg") + '">' + fmtEuro(v.aitak, true) + '</td></tr>';
+    }).join("");
+  }
+
+  /* ---------- Render: Ezarpenak ---------- */
+  function renderCategoryChips(){
+    var el = document.getElementById("categoryChips");
+    if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dago kategoriarik.</span>'; return; }
+    el.innerHTML = config.kategoriak.map(function(k){
+      return '<span class="chip-removable">' + escapeHtml(k) + '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabatu">×</button></span>';
+    }).join("");
+  }
+
+  function renderTemplateList(){
+    var el = document.getElementById("templateList");
+    if (!txantiloiak.length){ el.innerHTML = '<div class="panel empty">Ez dago txantiloirik oraindik.</div>'; return; }
+    el.innerHTML = txantiloiak.map(function(t){
+      return '<div class="panel tmpl-list-item">' +
+        '<div class="info"><div class="name">' + escapeHtml(t.izena) + '</div>' +
+        '<div class="meta">' + escapeHtml(t.kategoria) + ' · ' + (t.nork === "aitak" ? "Aitak" : "Neuk") + ' · ' + fmtEuro(t.kopurua) + '</div></div>' +
+        '<button class="btn btn-small" data-action="edit-tmpl" data-id="' + t.id + '" type="button">Editatu</button>' +
+        '<button class="btn btn-small btn-danger" data-action="delete-tmpl" data-id="' + t.id + '" type="button">Ezabatu</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  function renderSeedInfo(){
+    document.getElementById("seedInfo").innerHTML =
+      "Hasierako saldoak (" + config.hasierakoData + "): Aitak pagetakoak " + fmtEuro(config.aitakHasiera, true) +
+      " · Neure gastuek " + fmtEuro(config.neureHasiera, true);
+  }
+
+  function renderEzarpenak(){
+    renderCategoryChips();
+    renderTemplateList();
+    renderSeedInfo();
+  }
+
+  function renderAll(){
+    renderEtxean();
+    renderUrtekoa();
+    renderEzarpenak();
+  }
+
+  /* ---------- Tabs ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".tab-btn"), function(btn){
+    btn.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll(".tab-btn"), function(b){ b.classList.remove("active"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".view"), function(v){ v.classList.remove("active"); });
+      btn.classList.add("active");
+      var tab = btn.getAttribute("data-tab");
+      document.getElementById("view" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+      if (tab === "etxean") renderEtxean();
+      if (tab === "urtekoa") renderUrtekoa();
+      if (tab === "ezarpenak") renderEzarpenak();
+    });
+  });
+
+  window.addEventListener("resize", function(){
+    if (document.getElementById("viewEtxean").classList.contains("active")) drawCategoryChart();
+  });
+
+  /* ---------- Month / year nav ---------- */
+  document.getElementById("btnMonthPrev").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, -1); renderEtxean(); });
+  document.getElementById("btnMonthNext").addEventListener("click", function(){ visibleMonth = shiftMonth(visibleMonth, 1); renderEtxean(); });
+  document.getElementById("btnYearPrev").addEventListener("click", function(){ visibleYear--; renderUrtekoa(); });
+  document.getElementById("btnYearNext").addEventListener("click", function(){ visibleYear++; renderUrtekoa(); });
+
+  /* ---------- Toast ---------- */
+  var toastTimer = null;
+  function showToast(msg, onUndo){
+    var toast = document.getElementById("toast");
+    document.getElementById("toastMsg").textContent = msg;
+    var btn = document.getElementById("btnToastUndo");
+    var freshBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(freshBtn, btn);
+    freshBtn.addEventListener("click", function(){ if (onUndo) onUndo(); hideToast(); });
+    toast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+  function hideToast(){ document.getElementById("toast").classList.remove("show"); }
+
+  /* ---------- Movement modal ---------- */
+  var movOverlay = document.getElementById("modalMugimendu");
+  var movForm = document.getElementById("movForm");
+  var fId = document.getElementById("fId");
+  var fData = document.getElementById("fData");
+  var fDeskribapena = document.getElementById("fDeskribapena");
+  var fKategoria = document.getElementById("fKategoria");
+  var fKopurua = document.getElementById("fKopurua");
+  var fieldNork = document.getElementById("fieldNork");
+  var btnMovDelete = document.getElementById("btnMovDelete");
+
+  function updateNorkFieldVisibility(){
+    var mota = getSegValue("segMota");
+    if (mota === "sarrera"){ setSegValue("segNork", "neuk"); fieldNork.classList.add("seg-disabled"); }
+    else { fieldNork.classList.remove("seg-disabled"); }
+  }
+
+  setupSeg("segMota", updateNorkFieldVisibility);
+  setupSeg("segNork");
+
+  function openMovForm(mov){
+    movForm.reset();
+    updateMerchantDatalist();
+    if (mov){
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendua editatu";
+      fId.value = mov.id;
+      fData.value = mov.data;
+      fDeskribapena.value = mov.deskribapena || "";
+      populateCategorySelect(fKategoria, mov.kategoria);
+      fKopurua.value = mov.kopurua;
+      setSegValue("segMota", mov.mota === "sarrera" ? "sarrera" : "gastua");
+      setSegValue("segNork", mov.nork);
+      categoryManuallySet = true;
+      btnMovDelete.style.display = "inline-block";
+    } else {
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendu berria";
+      fId.value = "";
+      fData.value = todayStr();
+      populateCategorySelect(fKategoria, "");
+      setSegValue("segMota", "gastua");
+      setSegValue("segNork", "neuk");
+      categoryManuallySet = false;
+      btnMovDelete.style.display = "none";
+    }
+    updateNorkFieldVisibility();
+    movOverlay.classList.add("open");
+  }
+  function closeMovForm(){ movOverlay.classList.remove("open"); }
+
+  fDeskribapena.addEventListener("input", function(){
+    if (categoryManuallySet) return;
+    var key = fDeskribapena.value.trim().toLowerCase();
+    if (!key) return;
+    var map = buildMerchantMap();
+    if (map[key]) fKategoria.value = map[key];
+  });
+  fKategoria.addEventListener("change", function(){ categoryManuallySet = true; });
+
+  document.getElementById("btnBerria").addEventListener("click", function(){ openMovForm(null); });
+  document.getElementById("btnMovCancel").addEventListener("click", closeMovForm);
+  movOverlay.addEventListener("click", function(e){ if (e.target === movOverlay) closeMovForm(); });
+
+  btnMovDelete.addEventListener("click", function(){
+    var id = fId.value;
+    if (!id) return;
+    if (window.confirm("Ziur mugimendu hau ezabatu nahi duzula? Ekintza hau ez da desegin ahal.")){
+      deleteMugimendu(id).then(closeMovForm).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+    }
+  });
+
+  movForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = fId.value;
+    var mota = getSegValue("segMota");
+    var nork = mota === "sarrera" ? "neuk" : getSegValue("segNork");
+    var kopurua = parseFloat(fKopurua.value) || 0;
+    if (!fKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
+    if (kopurua <= 0){ window.alert("Kopurua 0 baino handiagoa izan behar da."); return; }
+    var existing = id ? movById(id) : null;
+    var data = {
+      data: fData.value,
+      deskribapena: fDeskribapena.value.trim(),
+      kategoria: fKategoria.value,
+      kopurua: kopurua,
+      mota: mota,
+      nork: nork,
+      createdAt: existing ? (existing.createdAt || new Date().toISOString()) : new Date().toISOString()
+    };
+    var submitBtn = movForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    saveMugimendu(id || null, data).then(function(){
+      submitBtn.disabled = false;
+      closeMovForm();
+    }).catch(function(err){
+      submitBtn.disabled = false;
+      window.alert("Ezin izan da gorde: " + err.message);
+    });
+  });
+
+  document.getElementById("movList").addEventListener("click", function(e){
+    var delBtn = e.target.closest('button[data-action="delete-kitapena"]');
+    if (delBtn){
+      var id = delBtn.getAttribute("data-id");
+      if (window.confirm("Ziur kitapen hau ezabatu nahi duzula?")){
+        deleteMugimendu(id).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+      }
+      return;
+    }
+    var card = e.target.closest(".mov-card");
+    if (!card) return;
+    if (card.getAttribute("data-mota") === "kitapena") return;
+    var mov = movById(card.getAttribute("data-id"));
+    if (mov) openMovForm(mov);
+  });
+
+  /* ---------- Template quick-log ---------- */
+  document.getElementById("templateRow").addEventListener("click", function(e){
+    var chip = e.target.closest(".tmpl-chip");
+    if (!chip) return;
+    var t = txantiloiak.find(function(x){ return x.id === chip.getAttribute("data-id"); });
+    if (!t) return;
+    var data = {
+      data: todayStr(),
+      deskribapena: t.izena,
+      kategoria: t.kategoria,
+      kopurua: Number(t.kopurua),
+      mota: "gastua",
+      nork: t.nork,
+      createdAt: new Date().toISOString()
+    };
+    var docId = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    setDoc(doc(db, "mugimenduak", docId), data).then(function(){
+      showToast(t.izena + " erregistratu da (" + fmtEuro(data.kopurua) + ")", function(){
+        deleteMugimendu(docId).catch(function(){});
+      });
+    }).catch(function(err){ window.alert("Ezin izan da erregistratu: " + err.message); });
+  });
+
+  /* ---------- Settle up (kitatu) modal ---------- */
+  var kitatuOverlay = document.getElementById("modalKitatu");
+  setupSeg("segKitatuMoo", function(v){
+    document.getElementById("kitatuPartialField").style.display = v === "zati" ? "block" : "none";
+  });
+
+  function openKitatuModal(){
+    var bal = computeBalances().aitak;
+    kitatuBalanceSnapshot = bal;
+    var info;
+    if (Math.abs(bal) < 0.005) info = "Dagoeneko kitatuta zaudete (0,00 €).";
+    else if (bal < 0) info = "Aitari <strong>" + fmtEuro(Math.abs(bal)) + "</strong> zor diozu.";
+    else info = "Aitak <strong>" + fmtEuro(bal) + "</strong> zor dizu.";
+    document.getElementById("kitatuInfo").innerHTML = info;
+    setSegValue("segKitatuMoo", "osorik");
+    document.getElementById("kitatuPartialField").style.display = "none";
+    document.getElementById("fKitatuKopurua").value = "";
+    kitatuOverlay.classList.add("open");
+  }
+  function closeKitatuModal(){ kitatuOverlay.classList.remove("open"); }
+
+  document.getElementById("btnKitatu").addEventListener("click", openKitatuModal);
+  document.getElementById("btnKitatuCancel").addEventListener("click", closeKitatuModal);
+  kitatuOverlay.addEventListener("click", function(e){ if (e.target === kitatuOverlay) closeKitatuModal(); });
+
+  document.getElementById("btnKitatuConfirm").addEventListener("click", function(){
+    var bal = kitatuBalanceSnapshot;
+    if (Math.abs(bal) < 0.005){ closeKitatuModal(); return; }
+    var mode = getSegValue("segKitatuMoo");
+    var signedKopurua;
+    var deskribapena;
+    if (mode === "osorik"){
+      signedKopurua = -bal;
+      deskribapena = "Kitapena (osorik)";
+    } else {
+      var entered = parseFloat(document.getElementById("fKitatuKopurua").value);
+      if (!entered || entered <= 0){ window.alert("Idatzi baliozko kopuru bat."); return; }
+      var direction = bal < 0 ? 1 : -1;
+      signedKopurua = direction * entered;
+      deskribapena = "Kitapena (zati bat)";
+    }
+    var data = {
+      data: todayStr(),
+      deskribapena: deskribapena,
+      kategoria: "Kitapena",
+      kopurua: signedKopurua,
+      mota: "kitapena",
+      nork: "aitak",
+      createdAt: new Date().toISOString()
+    };
+    var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    setDoc(doc(db, "mugimenduak", id), data).then(closeKitatuModal).catch(function(err){
+      window.alert("Ezin izan da kitatu: " + err.message);
+    });
+  });
+
+  /* ---------- Category management ---------- */
+  document.getElementById("btnAddCategory").addEventListener("click", function(){
+    var input = document.getElementById("newCategoryInput");
+    var v = input.value.trim();
+    if (!v) return;
+    if (config.kategoriak.some(function(c){ return c.toLowerCase() === v.toLowerCase(); })){
+      window.alert("Kategoria hori badago jada.");
+      return;
+    }
+    updateConfigCategories(config.kategoriak.concat([v])).then(function(){ input.value = ""; });
+  });
+
+  document.getElementById("categoryChips").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-cat]");
+    if (!btn) return;
+    var cat = btn.getAttribute("data-cat");
+    if (window.confirm('"' + cat + '" kategoria kendu nahi duzu? Kategoria hau erabili duten mugimenduek testua gordeko dute.')){
+      updateConfigCategories(config.kategoriak.filter(function(c){ return c !== cat; }));
+    }
+  });
+
+  /* ---------- Template modal ---------- */
+  var txantiloiOverlay = document.getElementById("modalTxantiloi");
+  var txantiloiForm = document.getElementById("txantiloiForm");
+  var tId = document.getElementById("tId");
+  var tIzena = document.getElementById("tIzena");
+  var tKategoria = document.getElementById("tKategoria");
+  var tKopurua = document.getElementById("tKopurua");
+  var btnTxantiloiDelete = document.getElementById("btnTxantiloiDelete");
+
+  setupSeg("segNorkT");
+
+  function openTxantiloiForm(t){
+    txantiloiForm.reset();
+    if (t){
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloia editatu";
+      tId.value = t.id;
+      tIzena.value = t.izena;
+      populateCategorySelect(tKategoria, t.kategoria);
+      tKopurua.value = t.kopurua;
+      setSegValue("segNorkT", t.nork);
+      btnTxantiloiDelete.style.display = "inline-block";
+    } else {
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloi berria";
+      tId.value = "";
+      populateCategorySelect(tKategoria, "");
+      setSegValue("segNorkT", "neuk");
+      btnTxantiloiDelete.style.display = "none";
+    }
+    txantiloiOverlay.classList.add("open");
+  }
+  function closeTxantiloiForm(){ txantiloiOverlay.classList.remove("open"); }
+
+  document.getElementById("btnAddTemplate").addEventListener("click", function(){ openTxantiloiForm(null); });
+  document.getElementById("btnTxantiloiCancel").addEventListener("click", closeTxantiloiForm);
+  txantiloiOverlay.addEventListener("click", function(e){ if (e.target === txantiloiOverlay) closeTxantiloiForm(); });
+
+  btnTxantiloiDelete.addEventListener("click", function(){
+    var id = tId.value;
+    if (!id) return;
+    if (window.confirm("Ziur txantiloi hau ezabatu nahi duzula?")){
+      deleteTxantiloi(id).then(closeTxantiloiForm).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+    }
+  });
+
+  txantiloiForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    if (!tKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
+    var kopurua = parseFloat(tKopurua.value) || 0;
+    if (kopurua <= 0){ window.alert("Kopurua 0 baino handiagoa izan behar da."); return; }
+    var data = {
+      izena: tIzena.value.trim(),
+      kategoria: tKategoria.value,
+      kopurua: kopurua,
+      nork: getSegValue("segNorkT")
+    };
+    var id = tId.value;
+    var submitBtn = txantiloiForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    saveTxantiloi(id || null, data).then(function(){
+      submitBtn.disabled = false;
+      closeTxantiloiForm();
+    }).catch(function(err){
+      submitBtn.disabled = false;
+      window.alert("Ezin izan da gorde: " + err.message);
+    });
+  });
+
+  document.getElementById("templateList").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    var id = btn.getAttribute("data-id");
+    var action = btn.getAttribute("data-action");
+    var t = txantiloiak.find(function(x){ return x.id === id; });
+    if (!t) return;
+    if (action === "edit-tmpl") openTxantiloiForm(t);
+    else if (action === "delete-tmpl"){
+      if (window.confirm("Ziur txantiloi hau ezabatu nahi duzula?")){
+        deleteTxantiloi(id).catch(function(err){ window.alert("Ezin izan da ezabatu: " + err.message); });
+      }
+    }
+  });
+
+  /* ---------- CSV export ---------- */
+  document.getElementById("btnExportCsv").addEventListener("click", function(){
+    var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurua"]];
+    mugimenduak.slice().sort(function(a,b){ return a.data.localeCompare(b.data); }).forEach(function(m){
+      rows.push([m.data, m.deskribapena||"", m.kategoria||"", m.mota, m.nork, String(m.kopurua).replace(".", ",")]);
+    });
+    var csv = rows.map(function(r){
+      return r.map(function(cell){
+        cell = String(cell);
+        if (/[",;\n]/.test(cell)) cell = '"' + cell.replace(/"/g, '""') + '"';
+        return cell;
+      }).join(";");
+    }).join("\r\n");
+    var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "poltsiko-begie-" + todayStr() + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  });
+
+  /* ---------- Init ---------- */
+  ensureConfigSeeded().then(function(){
+    startSync();
+  }).catch(function(err){
+    console.error("Errorea datuak kargatzean:", err);
+    window.alert("Errorea datuak kargatzean: " + err.message);
+  });
+</script>
+</body>
+</html>
