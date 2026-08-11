@@ -159,6 +159,19 @@ canvas#catChart{display:block;width:100%}
 .tmpl-list-item .meta{font-size:0.76rem;color:var(--muted);margin-top:2px}
 .seed-info{font-size:0.78rem;color:var(--muted);padding:12px 14px;line-height:1.5}
 
+.share-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.share-row .share-name{flex:2;min-width:0}
+.share-row .share-amount{flex:1;min-width:0}
+.share-row .share-remove{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--panel-border);background:var(--bg-2);color:var(--muted);font-size:16px;cursor:pointer;line-height:1}
+.hint{font-size:0.72rem;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.person-card{display:flex;align-items:center;gap:10px;padding:13px 14px;margin-bottom:8px}
+.person-card .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-bright);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;flex:none;font-family:'Fraunces',serif}
+.person-card .info{flex:1;min-width:0}
+.person-card .name{font-weight:700;font-size:0.92rem}
+.person-card .amount{font-size:0.84rem;margin-top:2px}
+.person-card .btn{flex:none}
+
 footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opacity:0.85;line-height:1.6}
 
 .field{margin-bottom:13px}
@@ -232,6 +245,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <button class="tab-btn active" id="tabLaburpena" type="button" data-tab="laburpena">Laburpena</button>
     <button class="tab-btn" id="tabUrtekoa" type="button" data-tab="urtekoa">Urtekue</button>
     <button class="tab-btn" id="tabEzarpenak" type="button" data-tab="ezarpenak">Ezarpenak</button>
+    <button class="tab-btn" id="tabZorrak" type="button" data-tab="zorrak">Zorrak</button>
   </nav>
 
   <!-- LABURPENA -->
@@ -337,6 +351,15 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   </section>
 
+  <!-- ZORRAK -->
+  <section class="view" id="viewZorrak">
+    <div class="toolbar">
+      <h3>Zorrak</h3>
+    </div>
+    <p class="settings-hint">Norbaitekin partekatutako gastuek, pertsonaka batuta. Mugimendu bat gehitzean adierazi nortzuekin partekatu dozun.</p>
+    <div id="zorrakList"></div>
+  </section>
+
   <footer>
     Datuek hodeian sinkronizauta (Firebase). Esteka hau dekon edonork ikusi eta editau ahal deu.<br>
     Poltsiko Begie &mdash; aitak pagetakuek ta neure gastuen kontrola.
@@ -385,6 +408,14 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <div class="field">
         <label for="fKopurua">Kopurue (&euro;)</label>
         <input type="number" id="fKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+      </div>
+
+      <div class="field" id="fieldShare">
+        <label>Norekin partekatu? (aukerakoa)</label>
+        <div id="shareRows"></div>
+        <button type="button" class="btn btn-small" id="btnAddShareRow">+ Pertsona gehitu</button>
+        <div class="hint" id="shareHint">Kopurue hutsik badau, berdinbanatuta kalkulauko da.</div>
+        <datalist id="peopleList"></datalist>
       </div>
 
       <div class="modal-actions">
@@ -460,6 +491,31 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   </div>
 </div>
 
+<!-- Modal: zor kendu -->
+<div class="modal-overlay" id="modalZorKendu">
+  <div class="modal">
+    <h2 id="zorKenduTitle">Kendu</h2>
+    <p class="info-line" id="zorKenduInfo"></p>
+
+    <div class="field">
+      <div class="seg" id="segZorKenduMoo">
+        <button type="button" data-value="osorik" class="active">Dana kendu</button>
+        <button type="button" data-value="zati">Beste kopuru bat</button>
+      </div>
+    </div>
+
+    <div class="field" id="zorKenduPartialField" style="display:none">
+      <label for="fZorKenduKopurua">Kopurue (&euro;)</label>
+      <input type="number" id="fZorKenduKopurua" min="0.01" step="0.01" inputmode="decimal">
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="btnZorKenduCancel">Utzi</button>
+      <button type="button" class="btn btn-coral" id="btnZorKenduConfirm">Kendu</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <span id="toastMsg"></span>
   <button type="button" id="btnToastUndo">Desegin</button>
@@ -498,11 +554,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- State ---------- */
   var mugimenduak = [];
   var txantiloiak = [];
+  var kitapenPertsonak = [];
   var config = { kategoriak: DEFAULT_KATEGORIAK.slice(), aitakHasiera: HASIERAKO_AITAK, neureHasiera: HASIERAKO_NEURE, hasierakoData: HASIERAKO_DATA };
   var visibleMonth = todayStr().slice(0,7);
   var visibleYear = parseInt(todayStr().slice(0,4), 10);
   var categoryManuallySet = false;
   var kitatuBalanceSnapshot = 0;
+  var currentZorPertsona = null;
 
   /* ---------- Firestore data layer ---------- */
   function ensureConfigSeeded(){
@@ -539,6 +597,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       txantiloiak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
       renderAll();
     }, function(err){ console.error("Erroree txantiloiek sinkronizatzean:", err); });
+
+    onSnapshot(collection(db, "kitapenPertsonak"), function(snapshot){
+      kitapenPertsonak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      renderAll();
+    }, function(err){ console.error("Erroree zorrak sinkronizatzean:", err); });
   }
 
   function saveMugimendu(id, data){
@@ -555,6 +618,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   function updateConfigCategories(list){
     return setDoc(doc(db, "meta", "config"), { kategoriak: list }, { merge: true });
+  }
+
+  function saveKitapenPertsona(data){
+    var id = "z" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    return setDoc(doc(db, "kitapenPertsonak", id), data);
   }
 
   /* ---------- Helpers ---------- */
@@ -618,6 +686,44 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var neure = config.neureHasiera, aitak = config.aitakHasiera;
     mugimenduak.forEach(function(m){ neure += effectOnNeure(m); aitak += effectOnAitak(m); });
     return { neure: neure, aitak: aitak };
+  }
+
+  /* ---------- Shared-expense (per-person) math ---------- */
+  function computePersonBalances(){
+    var map = {};
+    mugimenduak.forEach(function(m){
+      if (!m.partekatuak || !m.partekatuak.length) return;
+      m.partekatuak.forEach(function(s){
+        var izena = (s.izena || "").trim();
+        var key = izena.toLowerCase();
+        if (!key) return;
+        if (!map[key]) map[key] = { izena: izena, owed: 0 };
+        map[key].izena = izena;
+        map[key].owed += Number(s.kopurua) || 0;
+      });
+    });
+    kitapenPertsonak.forEach(function(k){
+      var izena = (k.izena || "").trim();
+      var key = izena.toLowerCase();
+      if (!key) return;
+      if (!map[key]) map[key] = { izena: izena, owed: 0 };
+      map[key].owed -= Number(k.kopurua) || 0;
+    });
+    return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return b.owed - a.owed; });
+  }
+
+  function knownPeopleNames(){
+    var seen = {}, list = [];
+    mugimenduak.forEach(function(m){
+      if (!m.partekatuak) return;
+      m.partekatuak.forEach(function(s){
+        var izena = (s.izena || "").trim();
+        if (!izena || seen[izena.toLowerCase()]) return;
+        seen[izena.toLowerCase()] = true;
+        list.push(izena);
+      });
+    });
+    return list;
   }
 
   /* ---------- Seg control helper ---------- */
@@ -832,12 +938,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var isKitapena = m.mota === "kitapena";
       var badge = isKitapena ? '<span class="badge badge-aitak">Kenduta</span>'
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
+      var shareChip = (m.partekatuak && m.partekatuak.length) ? '<span class="chip">🤝 ' + m.partekatuak.length + '</span>' : '';
       var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
       return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
         '<div class="mov-date">' + fmtDataLaburra(m.data).replace("\n","<br>") + '</div>' +
         '<div class="mov-info">' +
           '<div class="mov-desc">' + escapeHtml(m.deskribapena || "(izenik gabe)") + '</div>' +
-          '<div class="mov-meta"><span class="chip">' + escapeHtml(m.kategoria || "—") + '</span>' + badge + '</div>' +
+          '<div class="mov-meta"><span class="chip">' + escapeHtml(m.kategoria || "—") + '</span>' + badge + shareChip + '</div>' +
         '</div>' +
         '<div class="mov-amount ' + (effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(effect, true) + '</div>' +
         delBtn +
@@ -935,10 +1042,36 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     renderSeedInfo();
   }
 
+  /* ---------- Render: Zorrak ---------- */
+  function renderZorrak(){
+    var el = document.getElementById("zorrakList");
+    var people = computePersonBalances();
+    if (!people.length){
+      el.innerHTML = '<div class="panel empty">Oraindik ez dozu inogaz gasturik partekatu.</div>';
+      return;
+    }
+    el.innerHTML = people.map(function(p){
+      var settled = Math.abs(p.owed) < 0.005;
+      var initial = (p.izena.charAt(0) || "?").toUpperCase();
+      var amountHtml = settled
+        ? '<span class="pos">Kitatuta</span>'
+        : (p.owed > 0
+            ? '<span class="pos">' + fmtEuro(p.owed) + ' zor dotzu</span>'
+            : '<span class="neg">' + fmtEuro(Math.abs(p.owed)) + ' zor deutzazu</span>');
+      var btn = settled ? '' : '<button class="btn btn-small btn-coral" data-action="zor-kendu" data-izena="' + escapeHtml(p.izena) + '" data-owed="' + p.owed + '" type="button">Kendu</button>';
+      return '<div class="panel person-card">' +
+        '<div class="avatar">' + escapeHtml(initial) + '</div>' +
+        '<div class="info"><div class="name">' + escapeHtml(p.izena) + '</div><div class="amount">' + amountHtml + '</div></div>' +
+        btn +
+      '</div>';
+    }).join("");
+  }
+
   function renderAll(){
     renderLaburpena();
     renderUrtekoa();
     renderEzarpenak();
+    renderZorrak();
   }
 
   /* ---------- Tabs ---------- */
@@ -952,6 +1085,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       if (tab === "laburpena") renderLaburpena();
       if (tab === "urtekoa") renderUrtekoa();
       if (tab === "ezarpenak") renderEzarpenak();
+      if (tab === "zorrak") renderZorrak();
     });
   });
 
@@ -989,6 +1123,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   var fKategoria = document.getElementById("fKategoria");
   var fKopurua = document.getElementById("fKopurua");
   var fieldNork = document.getElementById("fieldNork");
+  var fieldShare = document.getElementById("fieldShare");
+  var shareRowsEl = document.getElementById("shareRows");
   var btnMovDelete = document.getElementById("btnMovDelete");
 
   function updateNorkFieldVisibility(){
@@ -997,12 +1133,62 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     else { fieldNork.classList.remove("seg-disabled"); }
   }
 
-  setupSeg("segMota", updateNorkFieldVisibility);
+  function updateShareFieldVisibility(){
+    var mota = getSegValue("segMota");
+    fieldShare.style.display = mota === "sarrera" ? "none" : "block";
+  }
+
+  setupSeg("segMota", function(){ updateNorkFieldVisibility(); updateShareFieldVisibility(); });
   setupSeg("segNork");
+
+  function updatePeopleDatalist(){
+    document.getElementById("peopleList").innerHTML = knownPeopleNames().map(function(n){
+      return '<option value="' + escapeHtml(n) + '">';
+    }).join("");
+  }
+
+  function shareRowCount(){ return shareRowsEl.querySelectorAll(".share-row").length; }
+
+  function updateShareDefaults(){
+    var total = parseFloat(fKopurua.value) || 0;
+    var rows = shareRowsEl.querySelectorAll(".share-row");
+    var namedCount = 0;
+    Array.prototype.forEach.call(rows, function(row){
+      if (row.querySelector(".share-name").value.trim()) namedCount++;
+    });
+    var defaultShare = (total > 0 && namedCount > 0) ? (total / (namedCount + 1)) : 0;
+    Array.prototype.forEach.call(rows, function(row){
+      var amountInput = row.querySelector(".share-amount");
+      amountInput.placeholder = defaultShare > 0 ? fmtEuro(defaultShare) : "€";
+    });
+  }
+
+  function addShareRow(izena, kopurua){
+    var row = document.createElement("div");
+    row.className = "share-row";
+    row.innerHTML =
+      '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
+      '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
+      '<button type="button" class="share-remove" aria-label="Kendu">×</button>';
+    row.querySelector(".share-name").value = izena || "";
+    row.querySelector(".share-amount").value = kopurua || "";
+    row.querySelector(".share-name").addEventListener("input", updateShareDefaults);
+    row.querySelector(".share-remove").addEventListener("click", function(){
+      row.remove();
+      updateShareDefaults();
+    });
+    shareRowsEl.appendChild(row);
+    updateShareDefaults();
+  }
+
+  document.getElementById("btnAddShareRow").addEventListener("click", function(){ addShareRow("", ""); });
+  fKopurua.addEventListener("input", updateShareDefaults);
 
   function openMovForm(mov){
     movForm.reset();
     updateMerchantDatalist();
+    updatePeopleDatalist();
+    shareRowsEl.innerHTML = "";
     if (mov){
       document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editau";
       fId.value = mov.id;
@@ -1014,6 +1200,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       setSegValue("segNork", mov.nork);
       categoryManuallySet = true;
       btnMovDelete.style.display = "inline-block";
+      (mov.partekatuak || []).forEach(function(s){ addShareRow(s.izena, s.kopurua); });
     } else {
       document.getElementById("modalMugimenduTitle").textContent = "Mugimendu barrie";
       fId.value = "";
@@ -1025,6 +1212,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       btnMovDelete.style.display = "none";
     }
     updateNorkFieldVisibility();
+    updateShareFieldVisibility();
     movOverlay.classList.add("open");
   }
   function closeMovForm(){ movOverlay.classList.remove("open"); }
@@ -1058,6 +1246,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var kopurua = parseFloat(fKopurua.value) || 0;
     if (!fKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
     if (kopurua <= 0){ window.alert("Kopurue 0 baino handiaua izan ber da."); return; }
+
+    var partekatuak = [];
+    if (mota === "gastua"){
+      var rows = Array.prototype.filter.call(shareRowsEl.querySelectorAll(".share-row"), function(row){
+        return row.querySelector(".share-name").value.trim();
+      });
+      var defaultShare = rows.length ? (kopurua / (rows.length + 1)) : 0;
+      partekatuak = rows.map(function(row){
+        var izena = row.querySelector(".share-name").value.trim();
+        var amountVal = parseFloat(row.querySelector(".share-amount").value);
+        var amount = (amountVal && amountVal > 0) ? amountVal : defaultShare;
+        return { izena: izena, kopurua: Math.round(amount * 100) / 100 };
+      });
+    }
+
     var existing = id ? movById(id) : null;
     var data = {
       data: fData.value,
@@ -1066,6 +1269,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       kopurua: kopurua,
       mota: mota,
       nork: nork,
+      partekatuak: partekatuak,
       createdAt: existing ? (existing.createdAt || new Date().toISOString()) : new Date().toISOString()
     };
     var submitBtn = movForm.querySelector('button[type="submit"]');
@@ -1170,6 +1374,60 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     };
     var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     setDoc(doc(db, "mugimenduak", id), data).then(closeKitatuModal).catch(function(err){
+      window.alert("Ezin izan da kendu: " + err.message);
+    });
+  });
+
+  /* ---------- Settle up (zor kendu) modal for shared-expense people ---------- */
+  var zorKenduOverlay = document.getElementById("modalZorKendu");
+  setupSeg("segZorKenduMoo", function(v){
+    document.getElementById("zorKenduPartialField").style.display = v === "zati" ? "block" : "none";
+  });
+
+  function openZorKenduModal(izena, owed){
+    currentZorPertsona = { izena: izena, owed: owed };
+    document.getElementById("zorKenduTitle").textContent = izena + " kendu";
+    var info;
+    if (Math.abs(owed) < 0.005) info = "Dana kenduta dau (0,00 €).";
+    else if (owed > 0) info = izena + " <strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
+    else info = izena + "-ri <strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor deutzazu.";
+    document.getElementById("zorKenduInfo").innerHTML = info;
+    setSegValue("segZorKenduMoo", "osorik");
+    document.getElementById("zorKenduPartialField").style.display = "none";
+    document.getElementById("fZorKenduKopurua").value = "";
+    zorKenduOverlay.classList.add("open");
+  }
+  function closeZorKenduModal(){ zorKenduOverlay.classList.remove("open"); }
+
+  document.getElementById("btnZorKenduCancel").addEventListener("click", closeZorKenduModal);
+  zorKenduOverlay.addEventListener("click", function(e){ if (e.target === zorKenduOverlay) closeZorKenduModal(); });
+
+  document.getElementById("zorrakList").addEventListener("click", function(e){
+    var btn = e.target.closest('button[data-action="zor-kendu"]');
+    if (!btn) return;
+    openZorKenduModal(btn.getAttribute("data-izena"), parseFloat(btn.getAttribute("data-owed")));
+  });
+
+  document.getElementById("btnZorKenduConfirm").addEventListener("click", function(){
+    if (!currentZorPertsona) { closeZorKenduModal(); return; }
+    var owed = currentZorPertsona.owed;
+    if (Math.abs(owed) < 0.005){ closeZorKenduModal(); return; }
+    var mode = getSegValue("segZorKenduMoo");
+    var signedKopurua;
+    if (mode === "osorik"){
+      signedKopurua = owed;
+    } else {
+      var entered = parseFloat(document.getElementById("fZorKenduKopurua").value);
+      if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
+      var direction = owed > 0 ? 1 : -1;
+      signedKopurua = direction * entered;
+    }
+    saveKitapenPertsona({
+      izena: currentZorPertsona.izena,
+      kopurua: signedKopurua,
+      data: todayStr(),
+      createdAt: new Date().toISOString()
+    }).then(closeZorKenduModal).catch(function(err){
       window.alert("Ezin izan da kendu: " + err.message);
     });
   });
@@ -1280,11 +1538,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- CSV export ---------- */
   document.getElementById("btnExportCsv").addEventListener("click", function(){
     var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
-    var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue"]];
+    var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
     mugimenduak.slice().sort(function(a,b){ return a.data.localeCompare(b.data); }).forEach(function(m){
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
-      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ",")]);
+      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
+      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
     });
     var csv = rows.map(function(r){
       return r.map(function(cell){
