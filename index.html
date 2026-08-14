@@ -680,7 +680,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
   function effectOnAitak(m){
     if (m.nork !== "aitak") return 0;
-    return m.mota === "kitapena" ? Number(m.kopurua) : -Number(m.kopurua);
+    return Number(m.kopurua);
   }
   function computeBalances(){
     var neure = config.neureHasiera, aitak = config.aitakHasiera;
