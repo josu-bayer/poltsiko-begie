@@ -165,7 +165,13 @@ canvas#catChart{display:block;width:100%}
 .share-row .share-remove{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--panel-border);background:var(--bg-2);color:var(--muted);font-size:16px;cursor:pointer;line-height:1}
 .hint{font-size:0.72rem;color:var(--muted);margin-top:6px;line-height:1.4}
 
-.person-card{display:flex;align-items:center;gap:10px;padding:13px 14px;margin-bottom:8px}
+.person-card{display:flex;align-items:center;gap:10px;padding:13px 14px;margin-bottom:8px;cursor:pointer}
+.person-detail-row{display:flex;align-items:center;gap:11px;padding:11px 14px;margin-bottom:8px}
+.person-detail-row .mov-date{font-size:0.68rem;color:var(--muted);width:36px;flex:none;text-align:center;line-height:1.25;text-transform:uppercase}
+.person-detail-row .info{flex:1;min-width:0}
+.person-detail-row .desc{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-detail-row .meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.person-detail-row .amount{font-weight:800;font-size:0.92rem;flex:none;font-variant-numeric:tabular-nums}
 .person-card .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-bright);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;flex:none;font-family:'Fraunces',serif}
 .person-card .info{flex:1;min-width:0}
 .person-card .name{font-weight:700;font-size:0.92rem}
@@ -512,6 +518,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="btnZorKenduCancel">Utzi</button>
       <button type="button" class="btn btn-coral" id="btnZorKenduConfirm">Kendu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: persona xehetasunak -->
+<div class="modal-overlay" id="modalPersonaXehetasunak">
+  <div class="modal">
+    <h2 id="personaXehetasunakTitle">—</h2>
+    <p class="info-line" id="personaXehetasunakInfo"></p>
+    <div id="personaXehetasunakList"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="btnPersonaXehetasunakClose">Utzi</button>
     </div>
   </div>
 </div>
@@ -1061,7 +1079,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
             ? '<span class="pos">' + fmtEuro(p.owed) + ' zor dotzu</span>'
             : '<span class="neg">' + fmtEuro(Math.abs(p.owed)) + ' zor dotzezu</span>');
       var btn = settled ? '' : '<button class="btn btn-small btn-coral" data-action="zor-kendu" data-izena="' + escapeHtml(p.izena) + '" data-owed="' + p.owed + '" type="button">Kendu</button>';
-      return '<div class="panel person-card">' +
+      return '<div class="panel person-card" data-izena="' + escapeHtml(p.izena) + '">' +
         '<div class="avatar">' + escapeHtml(initial) + '</div>' +
         '<div class="info"><div class="name">' + escapeHtml(p.izena) + '</div><div class="amount">' + amountHtml + '</div></div>' +
         btn +
@@ -1406,9 +1424,80 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   document.getElementById("zorrakList").addEventListener("click", function(e){
     var btn = e.target.closest('button[data-action="zor-kendu"]');
-    if (!btn) return;
-    openZorKenduModal(btn.getAttribute("data-izena"), parseFloat(btn.getAttribute("data-owed")));
+    if (btn){
+      openZorKenduModal(btn.getAttribute("data-izena"), parseFloat(btn.getAttribute("data-owed")));
+      return;
+    }
+    var card = e.target.closest(".person-card");
+    if (card) openPersonaXehetasunakModal(card.getAttribute("data-izena"));
   });
+
+  /* ---------- Person detail (xehetasunak) modal ---------- */
+  var personaXehetasunakOverlay = document.getElementById("modalPersonaXehetasunak");
+
+  function personEntries(izena){
+    var key = izena.trim().toLowerCase();
+    var entries = [];
+    mugimenduak.forEach(function(m){
+      if (!m.partekatuak) return;
+      m.partekatuak.forEach(function(s){
+        if ((s.izena || "").trim().toLowerCase() !== key) return;
+        entries.push({
+          data: m.data, createdAt: m.createdAt || "",
+          deskribapena: m.deskribapena, kategoria: m.kategoria,
+          effect: Number(s.kopurua), isSettlement: false
+        });
+      });
+    });
+    kitapenPertsonak.forEach(function(k){
+      if ((k.izena || "").trim().toLowerCase() !== key) return;
+      entries.push({
+        data: k.data, createdAt: k.createdAt || "",
+        deskribapena: null, kategoria: null,
+        effect: -Number(k.kopurua), isSettlement: true
+      });
+    });
+    entries.sort(function(a,b){ return (b.data+b.createdAt).localeCompare(a.data+a.createdAt); });
+    return entries;
+  }
+
+  function openPersonaXehetasunakModal(izena){
+    document.getElementById("personaXehetasunakTitle").textContent = izena;
+    var owed = 0;
+    personEntries(izena).forEach(function(en){ owed += en.effect; });
+    var info;
+    if (Math.abs(owed) < 0.005) info = "Kenduta zaudete.";
+    else if (owed > 0) info = "<strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
+    else info = "<strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor dotzezu.";
+    document.getElementById("personaXehetasunakInfo").innerHTML = info;
+
+    var entries = personEntries(izena);
+    var listEl = document.getElementById("personaXehetasunakList");
+    if (!entries.length){
+      listEl.innerHTML = '<div class="panel empty">Ez dago mugimendurik.</div>';
+    } else {
+      listEl.innerHTML = entries.map(function(en){
+        var descHtml, metaHtml;
+        if (en.isSettlement){
+          descHtml = "Kendu";
+          metaHtml = '<span class="badge badge-aitak">Kenduta</span>';
+        } else {
+          descHtml = escapeHtml(en.deskribapena || "(izenik gabe)");
+          metaHtml = '<span class="chip">' + escapeHtml(en.kategoria || "—") + '</span>';
+        }
+        return '<div class="panel person-detail-row">' +
+          '<div class="mov-date">' + fmtDataLaburra(en.data).replace("\n","<br>") + '</div>' +
+          '<div class="info"><div class="desc">' + descHtml + '</div><div class="meta">' + metaHtml + '</div></div>' +
+          '<div class="amount ' + (en.effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(en.effect, true) + '</div>' +
+        '</div>';
+      }).join("");
+    }
+    personaXehetasunakOverlay.classList.add("open");
+  }
+  function closePersonaXehetasunakModal(){ personaXehetasunakOverlay.classList.remove("open"); }
+
+  document.getElementById("btnPersonaXehetasunakClose").addEventListener("click", closePersonaXehetasunakModal);
+  personaXehetasunakOverlay.addEventListener("click", function(e){ if (e.target === personaXehetasunakOverlay) closePersonaXehetasunakModal(); });
 
   document.getElementById("btnZorKenduConfirm").addEventListener("click", function(){
     if (!currentZorPertsona) { closeZorKenduModal(); return; }
