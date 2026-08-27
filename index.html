@@ -351,6 +351,14 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     <div class="settings-section">
       <h3>Datuek</h3>
+      <div class="field">
+        <label>Nork</label>
+        <div class="seg" id="segCsvNork">
+          <button type="button" data-value="guztiak" class="active">Guztiak</button>
+          <button type="button" data-value="neuk">Neuk</button>
+          <button type="button" data-value="aitak">Aitak</button>
+        </div>
+      </div>
       <button class="btn" id="btnExportCsv" type="button">CSV esporteu</button>
       <div class="panel seed-info" id="seedInfo" style="margin-top:12px"></div>
     </div>
@@ -1627,15 +1635,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   /* ---------- CSV export ---------- */
+  setupSeg("segCsvNork");
+
   document.getElementById("btnExportCsv").addEventListener("click", function(){
+    var norkFilter = getSegValue("segCsvNork");
     var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
     var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
-    mugimenduak.slice().sort(function(a,b){ return a.data.localeCompare(b.data); }).forEach(function(m){
-      var motaLabel = motaLabelak[m.mota] || m.mota;
-      var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
-      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
-      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
-    });
+    mugimenduak.slice()
+      .filter(function(m){ return norkFilter === "guztiak" || m.nork === norkFilter; })
+      .sort(function(a,b){ return a.data.localeCompare(b.data); })
+      .forEach(function(m){
+        var motaLabel = motaLabelak[m.mota] || m.mota;
+        var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
+        var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
+        rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
+      });
     var csv = rows.map(function(r){
       return r.map(function(cell){
         cell = String(cell);
@@ -1647,7 +1661,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
-    a.download = "poltsiko-begie-" + todayStr() + ".csv";
+    var suffix = norkFilter === "guztiak" ? "" : ("-" + norkFilter);
+    a.download = "poltsiko-begie" + suffix + "-" + todayStr() + ".csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
