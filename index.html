@@ -297,7 +297,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     <div class="toolbar">
       <h3 id="movCount">Mugimenduek</h3>
-      <button class="btn btn-primary" id="btnBerria" type="button">+ Berrie</button>
+      <button class="btn btn-primary" id="btnBerria" type="button">+ Barrie</button>
     </div>
 
     <section class="mov-list" id="movList" aria-label="Mugimenduek"></section>
@@ -1641,6 +1641,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var norkFilter = getSegValue("segCsvNork");
     var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
     var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
+    var total = 0;
     mugimenduak.slice()
       .filter(function(m){ return norkFilter === "guztiak" || m.nork === norkFilter; })
       .sort(function(a,b){ return a.data.localeCompare(b.data); })
@@ -1649,7 +1650,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         var norkLabel = m.nork === "aitak" ? "Aitak" : "Neuk";
         var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
         rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
+        total += Number(m.kopurua) || 0;
       });
+    rows.push(["", "Dana", "", "", "", String(Math.round(total * 100) / 100).replace(".", ","), ""]);
     var csv = rows.map(function(r){
       return r.map(function(cell){
         cell = String(cell);
