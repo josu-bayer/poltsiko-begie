@@ -1642,6 +1642,16 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
     var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
     var total = 0;
+
+    if (norkFilter === "aitak" || norkFilter === "guztiak"){
+      rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
+      total += Number(config.aitakHasiera) || 0;
+    }
+    if (norkFilter === "neuk" || norkFilter === "guztiak"){
+      rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Neuk", String(config.neureHasiera).replace(".", ","), ""]);
+      total += Number(config.neureHasiera) || 0;
+    }
+
     mugimenduak.slice()
       .filter(function(m){ return norkFilter === "guztiak" || m.nork === norkFilter; })
       .sort(function(a,b){ return a.data.localeCompare(b.data); })
