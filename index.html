@@ -172,6 +172,8 @@ canvas#catChart{display:block;width:100%}
 .person-detail-row .desc{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .person-detail-row .meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
 .person-detail-row .amount{font-weight:800;font-size:0.92rem;flex:none;font-variant-numeric:tabular-nums}
+.person-detail-row.paid{opacity:0.55;font-style:italic}
+.person-detail-row.paid .desc{color:var(--muted)}
 .person-card .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-bright);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;flex:none;font-family:'Fraunces',serif}
 .person-card .info{flex:1;min-width:0}
 .person-card .name{font-weight:700;font-size:0.92rem}
@@ -1465,6 +1467,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         effect: -Number(k.kopurua), isSettlement: true
       });
     });
+
+    var totalSettled = 0;
+    entries.forEach(function(en){ if (en.isSettlement) totalSettled += -en.effect; });
+    var oldestFirst = entries.filter(function(en){ return !en.isSettlement; })
+      .sort(function(a,b){ return (a.data+a.createdAt).localeCompare(b.data+b.createdAt); });
+    var cumulative = 0;
+    oldestFirst.forEach(function(en){
+      if (cumulative + en.effect <= totalSettled + 0.005){
+        en.paid = true;
+        cumulative += en.effect;
+      } else {
+        en.paid = false;
+      }
+    });
+
     entries.sort(function(a,b){ return (b.data+b.createdAt).localeCompare(a.data+a.createdAt); });
     return entries;
   }
@@ -1493,7 +1510,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
           descHtml = escapeHtml(en.deskribapena || "(izenik gabe)");
           metaHtml = '<span class="chip">' + escapeHtml(en.kategoria || "—") + '</span>';
         }
-        return '<div class="panel person-detail-row">' +
+        return '<div class="panel person-detail-row' + (en.paid ? " paid" : "") + '">' +
           '<div class="mov-date">' + fmtDataLaburra(en.data).replace("\n","<br>") + '</div>' +
           '<div class="info"><div class="desc">' + descHtml + '</div><div class="meta">' + metaHtml + '</div></div>' +
           '<div class="amount ' + (en.effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(en.effect, true) + '</div>' +
