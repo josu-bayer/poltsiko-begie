@@ -207,7 +207,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 }
 .modal-overlay.open{opacity:1;pointer-events:auto}
 .modal{
-  width:100%;max-width:640px;max-height:92vh;overflow-y:auto;
+  width:100%;max-width:640px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
   background:var(--panel);border:1px solid var(--panel-border);border-radius:20px 20px 0 0;
   padding:20px 18px calc(24px + env(safe-area-inset-bottom));
   transform:translateY(16px);transition:transform 0.15s ease;
@@ -215,6 +215,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 .modal-overlay.open .modal{transform:translateY(0)}
 .modal h2{color:var(--accent-bright);font-size:1.1rem;margin-bottom:16px}
 .modal p.info-line{font-size:0.92rem;line-height:1.5;margin:0 0 16px}
+
+.modal.modal-fixed-actions{display:flex;flex-direction:column;overflow-y:hidden}
+.modal-fixed-actions .modal-scroll-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0}
+.modal-fixed-actions .modal-actions{flex:none;padding-top:14px}
 
 .toast{
   position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,140%);
@@ -534,10 +538,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
 <!-- Modal: persona xehetasunak -->
 <div class="modal-overlay" id="modalPersonaXehetasunak">
-  <div class="modal">
-    <h2 id="personaXehetasunakTitle">—</h2>
-    <p class="info-line" id="personaXehetasunakInfo"></p>
-    <div id="personaXehetasunakList"></div>
+  <div class="modal modal-fixed-actions">
+    <div class="modal-scroll-body">
+      <h2 id="personaXehetasunakTitle">—</h2>
+      <p class="info-line" id="personaXehetasunakInfo"></p>
+      <div id="personaXehetasunakList"></div>
+    </div>
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="btnPersonaXehetasunakClose">Utzi</button>
     </div>
@@ -1510,7 +1516,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
           descHtml = escapeHtml(en.deskribapena || "(izenik gabe)");
           metaHtml = '<span class="chip">' + escapeHtml(en.kategoria || "—") + '</span>';
         }
-        return '<div class="panel person-detail-row' + (en.paid ? " paid" : "") + '">' +
+        return '<div class="panel person-detail-row' + ((en.paid || en.isSettlement) ? " paid" : "") + '">' +
           '<div class="mov-date">' + fmtDataLaburra(en.data).replace("\n","<br>") + '</div>' +
           '<div class="info"><div class="desc">' + descHtml + '</div><div class="meta">' + metaHtml + '</div></div>' +
           '<div class="amount ' + (en.effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(en.effect, true) + '</div>' +
