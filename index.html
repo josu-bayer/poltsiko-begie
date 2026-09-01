@@ -76,7 +76,8 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;letter-spacing:0.005em;fo
 .bal-card .label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:700}
 .bal-card .value{font-family:'Fraunces',serif;font-size:1.32rem;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
 .bal-card .sub{font-size:0.76rem;color:var(--muted)}
-.bal-card .btn-settle{margin-top:8px;align-self:flex-start}
+.bal-card .btn-settle{margin-top:0;align-self:flex-start}
+.bal-card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .legend-hint{font-size:0.7rem;color:var(--muted);text-align:center;margin:0 0 16px}
 
 .btn{
@@ -121,7 +122,7 @@ canvas#catChart{display:block;width:100%}
 
 .mov-list{display:flex;flex-direction:column;gap:8px}
 .mov-card{display:flex;align-items:center;gap:11px;padding:11px 14px;position:relative;cursor:pointer}
-.mov-card[data-mota="kitapena"]{cursor:default}
+.mov-card[data-mota="kitapena"],.mov-card[data-mota="transferentzia"]{cursor:default}
 .mov-date{font-size:0.68rem;color:var(--muted);width:36px;flex:none;text-align:center;line-height:1.25;text-transform:uppercase}
 .mov-info{flex:1;min-width:0}
 .mov-desc{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -268,7 +269,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         <div class="label">Aitak pagetakuek</div>
         <div class="value" id="balAitak">—</div>
         <div class="sub" id="balAitakSub"></div>
-        <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kendu</button>
+        <div class="bal-card-actions">
+          <button class="btn btn-small btn-coral btn-settle" id="btnKitatu" type="button">Kendu</button>
+          <button class="btn btn-small btn-settle" id="btnTransferentzia" type="button">+ Transferentzia</button>
+        </div>
       </div>
       <div class="panel bal-card">
         <div class="label">Neure gastuek</div>
@@ -469,6 +473,23 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <button type="button" class="btn btn-ghost" id="btnKitatuCancel">Utzi</button>
       <button type="button" class="btn btn-coral" id="btnKitatuConfirm">Kendu</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal: transferentzia -->
+<div class="modal-overlay" id="modalTransferentzia">
+  <div class="modal">
+    <h2>Transferentzia gehitu</h2>
+    <form id="transferentziaForm">
+      <div class="field">
+        <label for="fTransferentziaKopurua">Kopurue (&euro;)</label>
+        <input type="number" id="fTransferentziaKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnTransferentziaCancel">Utzi</button>
+        <button type="submit" class="btn btn-primary">Gorde</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -972,10 +993,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     el.innerHTML = monthMovs.map(function(m){
       var effect = m.nork === "aitak" ? effectOnAitak(m) : effectOnNeure(m);
       var isKitapena = m.mota === "kitapena";
+      var isTransferentzia = m.mota === "transferentzia";
+      var isAdjustment = isKitapena || isTransferentzia;
       var badge = isKitapena ? '<span class="badge badge-aitak">Kenduta</span>'
+        : isTransferentzia ? '<span class="badge badge-aitak">Transferentzia</span>'
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
       var shareChip = (m.partekatuak && m.partekatuak.length) ? '<span class="chip">🤝 ' + m.partekatuak.length + '</span>' : '';
-      var delBtn = isKitapena ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
+      var delBtn = isAdjustment ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
       return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
         '<div class="mov-date">' + fmtDataLaburra(m.data).replace("\n","<br>") + '</div>' +
         '<div class="mov-info">' +
@@ -1323,14 +1347,15 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var delBtn = e.target.closest('button[data-action="delete-kitapena"]');
     if (delBtn){
       var id = delBtn.getAttribute("data-id");
-      if (window.confirm("Ziur kenketa hau ezabau gurezule?")){
+      if (window.confirm("Ziur mugimendu hau ezabau gurezule?")){
         deleteMugimendu(id).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
       }
       return;
     }
     var card = e.target.closest(".mov-card");
     if (!card) return;
-    if (card.getAttribute("data-mota") === "kitapena") return;
+    var cardMota = card.getAttribute("data-mota");
+    if (cardMota === "kitapena" || cardMota === "transferentzia") return;
     var mov = movById(card.getAttribute("data-id"));
     if (mov) openMovForm(mov);
   });
@@ -1411,6 +1436,45 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     setDoc(doc(db, "mugimenduak", id), data).then(closeKitatuModal).catch(function(err){
       window.alert("Ezin izan da kendu: " + err.message);
+    });
+  });
+
+  /* ---------- Transferentzia modal (dad hands over cash, may exceed what's owed) ---------- */
+  var transferentziaOverlay = document.getElementById("modalTransferentzia");
+  var transferentziaForm = document.getElementById("transferentziaForm");
+
+  function openTransferentziaModal(){
+    transferentziaForm.reset();
+    transferentziaOverlay.classList.add("open");
+  }
+  function closeTransferentziaModal(){ transferentziaOverlay.classList.remove("open"); }
+
+  document.getElementById("btnTransferentzia").addEventListener("click", openTransferentziaModal);
+  document.getElementById("btnTransferentziaCancel").addEventListener("click", closeTransferentziaModal);
+  transferentziaOverlay.addEventListener("click", function(e){ if (e.target === transferentziaOverlay) closeTransferentziaModal(); });
+
+  transferentziaForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var entered = parseFloat(document.getElementById("fTransferentziaKopurua").value);
+    if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
+    var data = {
+      data: todayStr(),
+      deskribapena: "Transferentzia",
+      kategoria: "Transferentzia",
+      kopurua: -entered,
+      mota: "transferentzia",
+      nork: "aitak",
+      createdAt: new Date().toISOString()
+    };
+    var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    var submitBtn = transferentziaForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    setDoc(doc(db, "mugimenduak", id), data).then(function(){
+      submitBtn.disabled = false;
+      closeTransferentziaModal();
+    }).catch(function(err){
+      submitBtn.disabled = false;
+      window.alert("Ezin izan da gorde: " + err.message);
     });
   });
 
@@ -1662,7 +1726,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   document.getElementById("btnExportCsv").addEventListener("click", function(){
     var norkFilter = getSegValue("segCsvNork");
-    var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa" };
+    var motaLabelak = { gastua: "Gastue", sarrera: "Sarrera", kitapena: "Kenketa", transferentzia: "Transferentzia" };
     var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
     var total = 0;
 
