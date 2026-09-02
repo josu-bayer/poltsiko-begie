@@ -380,14 +380,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <section class="view" id="viewZorrak">
     <div class="toolbar">
       <h3>Zorrak</h3>
-      <button class="btn btn-primary" id="btnZorGastuaBerria" type="button">+ Zor barrie</button>
+      <div class="bal-card-actions">
+        <button class="btn btn-small" id="btnZorTransferentziaBerria" type="button">+ Transferentzia</button>
+        <button class="btn btn-primary btn-small" id="btnZorGastuaBerria" type="button">+ Zor barrie</button>
+      </div>
     </div>
     <p class="settings-hint">Norbaitekin partekatutako gastuek, pertsonaka batuta. Mugimendu bat gehitzean adierazi zeinekaz partekatu dozun.</p>
     <div id="zorrakList"></div>
   </section>
 
   <footer>
-    Datuek hodeian sinkronizauta (Firebase). Esteka hau dekon edonork ikusi eta editau ahal deu.<br>
+    Datuek hodeian sinkronizauta (Firebase). Esteka hau dekon edonork ikusi eta editeu ahal deu.<br>
     Poltsiko Begie &mdash; aitak pagetakuek ta neure gastuen kontrola.
   </footer>
 </div>
@@ -502,10 +505,6 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <form id="zorGastuaForm">
       <input type="hidden" id="zgId">
       <div class="field">
-        <label>Izena</label>
-        <input type="text" id="zgIzena" list="peopleList" placeholder="Izena" required>
-      </div>
-      <div class="field">
         <label for="zgData">Data</label>
         <input type="date" id="zgData" required>
       </div>
@@ -520,6 +519,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <div class="field">
         <label for="zgKopurua">Kopurue (&euro;)</label>
         <input type="number" id="zgKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+      </div>
+      <div class="field">
+        <label>Nogaz partekatuzu?</label>
+        <div id="zgShareRows"></div>
+        <button type="button" class="btn btn-small" id="btnZgAddShareRow">+ Pertsona gehitu</button>
+        <div class="hint">Kopurue hutsik badau, berdinbanatuta kalkulauko da.</div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-danger" id="btnZorGastuaDelete" style="display:none">Ezabau</button>
@@ -617,6 +622,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <div class="modal">
     <h2 id="zorTransferentziaTitle">Transferentzia gehitu</h2>
     <form id="zorTransferentziaForm">
+      <div class="field">
+        <label>Izena</label>
+        <input type="text" id="fZorTransferentziaIzena" list="peopleList" placeholder="Izena" required>
+      </div>
       <div class="field">
         <label for="fZorTransferentziaKopurua">Kopurue (&euro;)</label>
         <input type="number" id="fZorTransferentziaKopurua" min="0.01" step="0.01" inputmode="decimal" required>
@@ -1050,14 +1059,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     el.innerHTML = monthMovs.map(function(m){
       var isBeste = m.nork === "beste";
-      var effect = isBeste ? -Number(m.kopurua) : (m.nork === "aitak" ? effectOnAitak(m) : effectOnNeure(m));
+      var besteShares = isBeste ? (m.partekatuak || []) : [];
+      var effect = isBeste
+        ? besteShares.reduce(function(sum, s){ return sum + (Number(s.kopurua) || 0); }, 0)
+        : (m.nork === "aitak" ? effectOnAitak(m) : effectOnNeure(m));
       var isKitapena = m.mota === "kitapena";
       var isTransferentzia = m.mota === "transferentzia";
       var isAdjustment = isKitapena || isTransferentzia;
-      var bestePertsona = isBeste && m.partekatuak && m.partekatuak[0] ? m.partekatuak[0].izena : "";
+      var besteLabel = besteShares.length === 1 ? besteShares[0].izena : (besteShares.length ? besteShares.length + " pertsona" : "?");
       var badge = isKitapena ? '<span class="badge badge-aitak">Kenduta</span>'
         : isTransferentzia ? '<span class="badge badge-aitak">Transferentzia</span>'
-        : isBeste ? '<span class="badge badge-beste">' + escapeHtml(bestePertsona || "?") + '</span>'
+        : isBeste ? '<span class="badge badge-beste">' + escapeHtml(besteLabel) + '</span>'
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
       var shareChip = (m.partekatuak && m.partekatuak.length) ? '<span class="chip">🤝 ' + m.partekatuak.length + '</span>' : '';
       var delBtn = isAdjustment ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
@@ -1268,11 +1280,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     }).join("");
   }
 
-  function shareRowCount(){ return shareRowsEl.querySelectorAll(".share-row").length; }
-
-  function updateShareDefaults(){
-    var total = parseFloat(fKopurua.value) || 0;
-    var rows = shareRowsEl.querySelectorAll(".share-row");
+  function updateShareDefaultsFor(containerEl, totalInputEl){
+    var total = parseFloat(totalInputEl.value) || 0;
+    var rows = containerEl.querySelectorAll(".share-row");
     var namedCount = 0;
     Array.prototype.forEach.call(rows, function(row){
       if (row.querySelector(".share-name").value.trim()) namedCount++;
@@ -1284,7 +1294,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   }
 
-  function addShareRow(izena, kopurua){
+  function addShareRowTo(containerEl, totalInputEl, izena, kopurua){
     var row = document.createElement("div");
     row.className = "share-row";
     row.innerHTML =
@@ -1293,14 +1303,17 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
     row.querySelector(".share-amount").value = kopurua || "";
-    row.querySelector(".share-name").addEventListener("input", updateShareDefaults);
+    row.querySelector(".share-name").addEventListener("input", function(){ updateShareDefaultsFor(containerEl, totalInputEl); });
     row.querySelector(".share-remove").addEventListener("click", function(){
       row.remove();
-      updateShareDefaults();
+      updateShareDefaultsFor(containerEl, totalInputEl);
     });
-    shareRowsEl.appendChild(row);
-    updateShareDefaults();
+    containerEl.appendChild(row);
+    updateShareDefaultsFor(containerEl, totalInputEl);
   }
+
+  function updateShareDefaults(){ updateShareDefaultsFor(shareRowsEl, fKopurua); }
+  function addShareRow(izena, kopurua){ addShareRowTo(shareRowsEl, fKopurua, izena, kopurua); }
 
   document.getElementById("btnAddShareRow").addEventListener("click", function(){ addShareRow("", ""); });
   fKopurua.addEventListener("input", updateShareDefaults);
@@ -1311,7 +1324,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     updatePeopleDatalist();
     shareRowsEl.innerHTML = "";
     if (mov){
-      document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editau";
+      document.getElementById("modalMugimenduTitle").textContent = "Mugimendue editeu";
       fId.value = mov.id;
       fData.value = mov.data;
       fDeskribapena.value = mov.deskribapena || "";
@@ -1545,29 +1558,34 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   var zorGastuaOverlay = document.getElementById("modalZorGastua");
   var zorGastuaForm = document.getElementById("zorGastuaForm");
   var zgId = document.getElementById("zgId");
-  var zgIzena = document.getElementById("zgIzena");
   var zgData = document.getElementById("zgData");
   var zgDeskribapena = document.getElementById("zgDeskribapena");
   var zgKategoria = document.getElementById("zgKategoria");
   var zgKopurua = document.getElementById("zgKopurua");
+  var zgShareRowsEl = document.getElementById("zgShareRows");
   var btnZorGastuaDelete = document.getElementById("btnZorGastuaDelete");
+
+  document.getElementById("btnZgAddShareRow").addEventListener("click", function(){ addShareRowTo(zgShareRowsEl, zgKopurua, "", ""); });
+  zgKopurua.addEventListener("input", function(){ updateShareDefaultsFor(zgShareRowsEl, zgKopurua); });
 
   function openZorGastuaForm(mov){
     zorGastuaForm.reset();
     updatePeopleDatalist();
     populateCategorySelect(zgKategoria, mov ? mov.kategoria : "");
+    zgShareRowsEl.innerHTML = "";
     if (mov){
-      document.getElementById("zorGastuaTitle").textContent = "Zorra editau";
+      document.getElementById("zorGastuaTitle").textContent = "Zorra editeu";
       zgId.value = mov.id;
-      zgIzena.value = (mov.partekatuak && mov.partekatuak[0]) ? mov.partekatuak[0].izena : "";
       zgData.value = mov.data;
       zgDeskribapena.value = mov.deskribapena || "";
       zgKopurua.value = mov.kopurua;
+      (mov.partekatuak || []).forEach(function(s){ addShareRowTo(zgShareRowsEl, zgKopurua, s.izena, Math.abs(Number(s.kopurua))); });
       btnZorGastuaDelete.style.display = "inline-block";
     } else {
       document.getElementById("zorGastuaTitle").textContent = "Zor barrie";
       zgId.value = "";
       zgData.value = todayStr();
+      addShareRowTo(zgShareRowsEl, zgKopurua, "", "");
       btnZorGastuaDelete.style.display = "none";
     }
     zorGastuaOverlay.classList.add("open");
@@ -1588,11 +1606,22 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   zorGastuaForm.addEventListener("submit", function(e){
     e.preventDefault();
-    var izena = zgIzena.value.trim();
     var kopurua = parseFloat(zgKopurua.value) || 0;
-    if (!izena){ window.alert("Idatzi izen bat."); return; }
     if (!zgKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
     if (kopurua <= 0){ window.alert("Kopurue 0 baino handiaua izan ber da."); return; }
+
+    var rows = Array.prototype.filter.call(zgShareRowsEl.querySelectorAll(".share-row"), function(row){
+      return row.querySelector(".share-name").value.trim();
+    });
+    if (!rows.length){ window.alert("Idatzi gutxienez pertsona baten izena."); return; }
+    var defaultShare = kopurua / (rows.length + 1);
+    var partekatuak = rows.map(function(row){
+      var izena = row.querySelector(".share-name").value.trim();
+      var amountVal = parseFloat(row.querySelector(".share-amount").value);
+      var amount = (amountVal && amountVal > 0) ? amountVal : defaultShare;
+      return { izena: izena, kopurua: -Math.round(amount * 100) / 100 };
+    });
+
     var id = zgId.value;
     var existing = id ? movById(id) : null;
     var data = {
@@ -1602,7 +1631,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       kopurua: kopurua,
       mota: "gastua",
       nork: "beste",
-      partekatuak: [{ izena: izena, kopurua: -kopurua }],
+      partekatuak: partekatuak,
       createdAt: existing ? (existing.createdAt || new Date().toISOString()) : new Date().toISOString()
     };
     var submitBtn = zorGastuaForm.querySelector('button[type="submit"]');
@@ -1747,26 +1776,31 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   var zorTransferentziaOverlay = document.getElementById("modalZorTransferentzia");
   var zorTransferentziaForm = document.getElementById("zorTransferentziaForm");
 
-  function openZorTransferentziaModal(){
+  function openZorTransferentziaModal(izena){
     zorTransferentziaForm.reset();
-    document.getElementById("zorTransferentziaTitle").textContent = (currentPersonaIzena || "") + " - transferentzia gehitu";
+    updatePeopleDatalist();
+    document.getElementById("zorTransferentziaTitle").textContent = "Transferentzia gehitu";
+    document.getElementById("fZorTransferentziaIzena").value = izena || "";
     zorTransferentziaOverlay.classList.add("open");
   }
   function closeZorTransferentziaModal(){ zorTransferentziaOverlay.classList.remove("open"); }
 
-  document.getElementById("btnPersonaTransferentzia").addEventListener("click", openZorTransferentziaModal);
+  document.getElementById("btnPersonaTransferentzia").addEventListener("click", function(){ openZorTransferentziaModal(currentPersonaIzena); });
+  document.getElementById("btnZorTransferentziaBerria").addEventListener("click", function(){ openZorTransferentziaModal(""); });
   document.getElementById("btnZorTransferentziaCancel").addEventListener("click", closeZorTransferentziaModal);
   zorTransferentziaOverlay.addEventListener("click", function(e){ if (e.target === zorTransferentziaOverlay) closeZorTransferentziaModal(); });
 
   zorTransferentziaForm.addEventListener("submit", function(e){
     e.preventDefault();
-    if (!currentPersonaIzena) return;
+    var izena = document.getElementById("fZorTransferentziaIzena").value.trim();
+    if (!izena){ window.alert("Idatzi izen bat."); return; }
     var entered = parseFloat(document.getElementById("fZorTransferentziaKopurua").value);
     if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
+    var reopenDetail = personaXehetasunakOverlay.classList.contains("open");
     var submitBtn = zorTransferentziaForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     saveKitapenPertsona({
-      izena: currentPersonaIzena,
+      izena: izena,
       kopurua: entered,
       mota: "transferentzia",
       data: todayStr(),
@@ -1774,7 +1808,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     }).then(function(){
       submitBtn.disabled = false;
       closeZorTransferentziaModal();
-      openPersonaXehetasunakModal(currentPersonaIzena);
+      if (reopenDetail) openPersonaXehetasunakModal(izena);
     }).catch(function(err){
       submitBtn.disabled = false;
       window.alert("Ezin izan da gorde: " + err.message);
@@ -1841,7 +1875,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function openTxantiloiForm(t){
     txantiloiForm.reset();
     if (t){
-      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloie editau";
+      document.getElementById("modalTxantiloiTitle").textContent = "Txantiloie editeu";
       tId.value = t.id;
       tIzena.value = t.izena;
       populateCategorySelect(tKategoria, t.kategoria);
