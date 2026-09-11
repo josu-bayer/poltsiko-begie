@@ -50,6 +50,10 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;letter-spacing:0.005em;fo
 .app{max-width:640px;margin:0 auto;padding:18px 16px calc(56px + env(safe-area-inset-bottom));padding-top:calc(18px + env(safe-area-inset-top))}
 
 .topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.sync-status{margin-left:auto;flex:none;font-size:0.68rem;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap;align-self:flex-start}
+.sync-status.online{background:var(--accent-soft);color:var(--accent-bright)}
+.sync-status.pending{background:var(--coral-soft);color:var(--coral)}
+.sync-status.offline{background:rgba(255,255,255,0.08);color:var(--muted)}
 .topbar .mark{width:42px;height:42px;flex:none;filter:drop-shadow(0 0 9px rgba(92,196,168,0.55)) drop-shadow(0 0 2px rgba(235,145,105,0.35))}
 .topbar h1{font-size:1.42rem;color:var(--accent);text-shadow:0 0 18px rgba(92,196,168,0.25)}
 .topbar p{margin:2px 0 0;font-size:0.8rem;color:var(--muted)}
@@ -253,6 +257,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <h1>Poltsiko Begie</h1>
       <p>Aitak pagetakuek ta neure gastuek, leku berean</p>
     </div>
+    <span class="sync-status" id="syncStatus"></span>
   </header>
 
   <nav class="tabs">
@@ -646,8 +651,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
-    getFirestore, collection, doc, setDoc, deleteDoc, getDoc, onSnapshot,
-    enableIndexedDbPersistence
+    initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+    collection, doc, setDoc, deleteDoc, getDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
   /* ---------- Firebase setup ---------- */
@@ -661,8 +666,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   };
 
   var fbApp = initializeApp(firebaseConfig);
-  var db = getFirestore(fbApp);
-  enableIndexedDbPersistence(db).catch(function(e){ /* multiple tabs or unsupported browser: ignore, Firestore still works online */ });
+  var db = initializeFirestore(fbApp, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
 
   /* ---------- Constants ---------- */
   var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraiue","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Claude","Mus","Bestelakuek"];
@@ -698,8 +704,32 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   }
 
+  /* ---------- Sync status indicator ---------- */
+  var syncPending = { config: false, mugimenduak: false, txantiloiak: false, kitapenPertsonak: false };
+  var isOnline = navigator.onLine;
+
+  function renderSyncStatus(){
+    var el = document.getElementById("syncStatus");
+    var anyPending = syncPending.config || syncPending.mugimenduak || syncPending.txantiloiak || syncPending.kitapenPertsonak;
+    if (!isOnline){
+      el.textContent = "Offline";
+      el.className = "sync-status offline";
+    } else if (anyPending){
+      el.textContent = "Ez sinkronizauta";
+      el.className = "sync-status pending";
+    } else {
+      el.textContent = "Sinkronizauta";
+      el.className = "sync-status online";
+    }
+  }
+
+  window.addEventListener("online", function(){ isOnline = true; renderSyncStatus(); });
+  window.addEventListener("offline", function(){ isOnline = false; renderSyncStatus(); });
+
   function startSync(){
-    onSnapshot(doc(db, "meta", "config"), function(snap){
+    var metaOpts = { includeMetadataChanges: true };
+
+    onSnapshot(doc(db, "meta", "config"), metaOpts, function(snap){
       if (snap.exists()){
         var d = snap.data();
         config.kategoriak = d.kategoriak || DEFAULT_KATEGORIAK.slice();
@@ -707,22 +737,30 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         config.neureHasiera = typeof d.neureHasiera === "number" ? d.neureHasiera : HASIERAKO_NEURE;
         config.hasierakoData = d.hasierakoData || HASIERAKO_DATA;
       }
+      syncPending.config = snap.metadata.hasPendingWrites;
       renderAll();
+      renderSyncStatus();
     }, function(err){ console.error("Erroree config sinkronizatzean:", err); });
 
-    onSnapshot(collection(db, "mugimenduak"), function(snapshot){
+    onSnapshot(collection(db, "mugimenduak"), metaOpts, function(snapshot){
       mugimenduak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      syncPending.mugimenduak = snapshot.metadata.hasPendingWrites;
       renderAll();
+      renderSyncStatus();
     }, function(err){ console.error("Erroree mugimenduek sinkronizatzean:", err); });
 
-    onSnapshot(collection(db, "txantiloiak"), function(snapshot){
+    onSnapshot(collection(db, "txantiloiak"), metaOpts, function(snapshot){
       txantiloiak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      syncPending.txantiloiak = snapshot.metadata.hasPendingWrites;
       renderAll();
+      renderSyncStatus();
     }, function(err){ console.error("Erroree txantiloiek sinkronizatzean:", err); });
 
-    onSnapshot(collection(db, "kitapenPertsonak"), function(snapshot){
+    onSnapshot(collection(db, "kitapenPertsonak"), metaOpts, function(snapshot){
       kitapenPertsonak = snapshot.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      syncPending.kitapenPertsonak = snapshot.metadata.hasPendingWrites;
       renderAll();
+      renderSyncStatus();
     }, function(err){ console.error("Erroree zorrak sinkronizatzean:", err); });
   }
 
@@ -2000,6 +2038,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   /* ---------- Init ---------- */
+  renderSyncStatus();
   ensureConfigSeeded().then(function(){
     startSync();
   }).catch(function(err){
