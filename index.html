@@ -2000,25 +2000,47 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var rows = [["Data","Deskribapena","Kategoria","Mota","Nork","Kopurue","Partekatuta"]];
     var total = 0;
 
-    if (norkFilter === "aitak" || norkFilter === "guztiak"){
-      rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
-      total += Number(config.aitakHasiera) || 0;
-    }
-    if (norkFilter === "neuk" || norkFilter === "guztiak"){
-      rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Neuk", String(config.neureHasiera).replace(".", ","), ""]);
-      total += Number(config.neureHasiera) || 0;
+    function pushMovRow(m){
+      var motaLabel = motaLabelak[m.mota] || m.mota;
+      var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
+      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
+      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
+      total += Number(m.kopurua) || 0;
     }
 
-    mugimenduak.slice()
-      .filter(function(m){ return norkFilter === "guztiak" || m.nork === norkFilter; })
-      .sort(function(a,b){ return a.data.localeCompare(b.data); })
-      .forEach(function(m){
-        var motaLabel = motaLabelak[m.mota] || m.mota;
-        var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
-        var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
-        rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
-        total += Number(m.kopurua) || 0;
+    if (norkFilter === "aitak"){
+      // Only export what happened since the last time the Aitak balance was exactly net 0 -
+      // everything before that nets to nothing and is redundant history.
+      var aitakChrono = mugimenduak.filter(function(m){ return m.nork === "aitak"; })
+        .slice()
+        .sort(function(a,b){ return (a.data+(a.createdAt||"")).localeCompare(b.data+(b.createdAt||"")); });
+      var running = config.aitakHasiera;
+      var lastZeroAt = Math.abs(running) < 0.005 ? -1 : null;
+      aitakChrono.forEach(function(m, idx){
+        running += Number(m.kopurua) || 0;
+        if (Math.abs(running) < 0.005) lastZeroAt = idx;
       });
+      if (lastZeroAt === null){
+        rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
+        total += Number(config.aitakHasiera) || 0;
+        aitakChrono.forEach(pushMovRow);
+      } else {
+        aitakChrono.slice(lastZeroAt + 1).forEach(pushMovRow);
+      }
+    } else {
+      if (norkFilter === "guztiak"){
+        rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
+        total += Number(config.aitakHasiera) || 0;
+      }
+      if (norkFilter === "neuk" || norkFilter === "guztiak"){
+        rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Neuk", String(config.neureHasiera).replace(".", ","), ""]);
+        total += Number(config.neureHasiera) || 0;
+      }
+      mugimenduak.slice()
+        .filter(function(m){ return norkFilter === "guztiak" || m.nork === norkFilter; })
+        .sort(function(a,b){ return a.data.localeCompare(b.data); })
+        .forEach(pushMovRow);
+    }
     rows.push(["", "Dana", "", "", "", String(Math.round(total * 100) / 100).replace(".", ","), ""]);
     var csv = rows.map(function(r){
       return r.map(function(cell){
