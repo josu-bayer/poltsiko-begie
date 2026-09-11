@@ -991,7 +991,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     canvas.style.display = "block";
 
     var dpr = window.devicePixelRatio || 1;
-    var cssW = wrap.clientWidth;
+    var wrapStyle = getComputedStyle(wrap);
+    var wrapPadding = parseFloat(wrapStyle.paddingLeft) + parseFloat(wrapStyle.paddingRight);
+    var cssW = wrap.clientWidth - wrapPadding;
     var rowH = 30;
     var cssH = Math.max(40, data.length * rowH + 6);
     canvas.width = cssW * dpr;
