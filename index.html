@@ -130,6 +130,7 @@ canvas#catChart{display:block;width:100%}
 .mov-date{font-size:0.68rem;color:var(--muted);width:36px;flex:none;text-align:center;line-height:1.25;text-transform:uppercase}
 .mov-info{flex:1;min-width:0}
 .mov-desc{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov-desc.income{color:var(--positive)}
 .mov-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
 .chip{font-size:0.68rem;background:rgba(255,255,255,0.08);color:var(--muted);padding:3px 9px;border-radius:99px;font-weight:600}
 .badge{font-size:0.66rem;font-weight:800;padding:3px 8px;border-radius:99px;white-space:nowrap}
@@ -304,6 +305,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <h3 id="catChartTitle">Kategoriaka</h3>
       <div class="chart-empty" id="catChartEmpty">Hile honetan ez dau gasturik</div>
       <canvas id="catChart"></canvas>
+    </div>
+
+    <div class="panel chart-card">
+      <h3 id="incomeChartTitle">Sarrerak kategoriaka</h3>
+      <div class="chart-empty" id="incomeChartEmpty">Hile honetan ez dau sarrerarik</div>
+      <canvas id="incomeChart"></canvas>
     </div>
 
     <div class="tmpl-row-wrap" id="templateRowWrap" style="display:none">
@@ -958,10 +965,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     ctx.closePath();
   }
 
-  function getCategoryTotals(monthKey){
+  function getCategoryTotals(monthKey, mota){
     var totals = {};
     mugimenduak.forEach(function(m){
-      if (m.mota !== "gastua") return;
+      if (m.mota !== mota) return;
       if (monthKeyOf(m.data) !== monthKey) return;
       totals[m.kategoria] = (totals[m.kategoria] || 0) + Number(m.kopurua);
     });
@@ -976,11 +983,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     return CHART_COLORS[idx % CHART_COLORS.length];
   }
 
-  function drawCategoryChart(){
-    var canvas = document.getElementById("catChart");
+  function drawCategoryChartFor(canvasId, emptyId, monthKey, mota){
+    var canvas = document.getElementById(canvasId);
     var wrap = canvas.parentElement;
-    var data = getCategoryTotals(visibleMonth);
-    var emptyEl = document.getElementById("catChartEmpty");
+    var data = getCategoryTotals(monthKey, mota);
+    var emptyEl = document.getElementById(emptyId);
 
     if (!data.length){
       emptyEl.style.display = "block";
@@ -1041,6 +1048,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   }
 
+  function drawCategoryChart(){ drawCategoryChartFor("catChart", "catChartEmpty", visibleMonth, "gastua"); }
+  function drawIncomeChart(){ drawCategoryChartFor("incomeChart", "incomeChartEmpty", visibleMonth, "sarrera"); }
+
   /* ---------- Render: Laburpena ---------- */
   function renderBalances(){
     var b = computeBalances();
@@ -1082,6 +1092,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function renderCategoryChartSection(){
     document.getElementById("catChartTitle").textContent = "Kategoriaka — " + monthLabel(visibleMonth);
     drawCategoryChart();
+    document.getElementById("incomeChartTitle").textContent = "Sarrerak kategoriaka — " + monthLabel(visibleMonth);
+    drawIncomeChart();
   }
 
   function renderTemplateRow(){
@@ -1121,10 +1133,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         : (m.nork === "aitak" ? '<span class="badge badge-aitak">Aitak</span>' : '<span class="badge badge-neuk">Neuk</span>');
       var shareChip = (m.partekatuak && m.partekatuak.length) ? '<span class="chip">🤝 ' + m.partekatuak.length + '</span>' : '';
       var delBtn = isAdjustment ? '<button class="mov-del" data-action="delete-kitapena" data-id="'+m.id+'" aria-label="Ezabau" type="button">×</button>' : '';
+      var descClass = m.mota === "sarrera" ? "mov-desc income" : "mov-desc";
       return '<div class="panel mov-card" data-id="' + m.id + '" data-mota="' + m.mota + '">' +
         '<div class="mov-date">' + fmtDataLaburra(m.data).replace("\n","<br>") + '</div>' +
         '<div class="mov-info">' +
-          '<div class="mov-desc">' + escapeHtml(m.deskribapena || "(izenik gabe)") + '</div>' +
+          '<div class="' + descClass + '">' + escapeHtml(m.deskribapena || "(izenik gabe)") + '</div>' +
           '<div class="mov-meta"><span class="chip">' + escapeHtml(m.kategoria || "—") + '</span>' + badge + shareChip + '</div>' +
         '</div>' +
         '<div class="mov-amount ' + (effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(effect, true) + '</div>' +
@@ -1271,7 +1284,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   window.addEventListener("resize", function(){
-    if (document.getElementById("viewLaburpena").classList.contains("active")) drawCategoryChart();
+    if (document.getElementById("viewLaburpena").classList.contains("active")){ drawCategoryChart(); drawIncomeChart(); }
   });
 
   /* ---------- Month / year nav ---------- */
