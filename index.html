@@ -50,7 +50,7 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;letter-spacing:0.005em;fo
 .app{max-width:640px;margin:0 auto;padding:18px 16px calc(56px + env(safe-area-inset-bottom));padding-top:calc(18px + env(safe-area-inset-top))}
 
 .topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.sync-status{margin-left:auto;flex:none;font-size:0.68rem;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap;align-self:flex-start}
+.sync-status{flex:none;font-size:0.68rem;font-weight:700;padding:5px 10px;border-radius:99px;white-space:nowrap;align-self:flex-start}
 .sync-status.online{background:var(--accent-soft);color:var(--accent-bright)}
 .sync-status.pending{background:var(--coral-soft);color:var(--coral)}
 .sync-status.offline{background:rgba(255,255,255,0.08);color:var(--muted)}
@@ -258,6 +258,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <h1>Poltsiko Begie</h1>
       <p>Aitak pagetakuek ta neure gastuek, leku berean</p>
     </div>
+    <button class="btn btn-small btn-ghost" id="btnRefresh" type="button" title="Eguneratzeak bilau" style="margin-left:auto">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v6h-6"/>
+      </svg>
+    </button>
     <span class="sync-status" id="syncStatus"></span>
   </header>
 
@@ -2076,6 +2081,26 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   /* ---------- Init ---------- */
   renderSyncStatus();
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(function(err){
+      console.error("Service worker erregistratzean errorea:", err);
+    });
+  }
+
+  var btnRefresh = document.getElementById("btnRefresh");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", function(){
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          regs.forEach(function(reg){ reg.update(); });
+        }).finally(function(){ window.location.reload(); });
+      } else {
+        window.location.reload();
+      }
+    });
+  }
+
   ensureConfigSeeded().then(function(){
     startSync();
   }).catch(function(err){
