@@ -180,6 +180,7 @@ canvas#catChart{display:block;width:100%}
 .person-detail-row .meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
 .person-detail-row .amount{font-weight:800;font-size:0.92rem;flex:none;font-variant-numeric:tabular-nums}
 .person-detail-row.paid{opacity:0.55;font-style:italic}
+.person-detail-row.tappable{cursor:pointer}
 .person-detail-row.paid .desc{color:var(--muted)}
 .person-card .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent-bright);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;flex:none;font-family:'Fraunces',serif}
 .person-card .info{flex:1;min-width:0}
@@ -639,15 +640,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   <div class="modal">
     <h2 id="zorTransferentziaTitle">Transferentzia gehitu</h2>
     <form id="zorTransferentziaForm">
+      <input type="hidden" id="fZorTransferentziaId">
       <div class="field">
         <label>Izena</label>
         <input type="text" id="fZorTransferentziaIzena" list="peopleList" placeholder="Izena" required>
+      </div>
+      <div class="field">
+        <label for="fZorTransferentziaDeskribapena">Deskribapena</label>
+        <input type="text" id="fZorTransferentziaDeskribapena" placeholder="Adib: Bizum">
       </div>
       <div class="field">
         <label for="fZorTransferentziaKopurua">Kopurue (&euro;)</label>
         <input type="number" id="fZorTransferentziaKopurua" min="0.01" step="0.01" inputmode="decimal" required>
       </div>
       <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="btnZorTransferentziaDelete" style="display:none">Ezabau</button>
         <button type="button" class="btn btn-ghost" id="btnZorTransferentziaCancel">Utzi</button>
         <button type="submit" class="btn btn-primary">Gorde</button>
       </div>
@@ -792,10 +799,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     return setDoc(doc(db, "meta", "config"), { kategoriak: list }, { merge: true });
   }
 
-  function saveKitapenPertsona(data){
-    var id = "z" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-    return setDoc(doc(db, "kitapenPertsonak", id), data);
+  function saveKitapenPertsona(id, data){
+    var targetId = id || ("z" + Date.now().toString(36) + Math.random().toString(36).slice(2,7));
+    return setDoc(doc(db, "kitapenPertsonak", targetId), data);
   }
+  function deleteKitapenPertsona(id){ return deleteDoc(doc(db, "kitapenPertsonak", id)); }
 
   /* ---------- Helpers ---------- */
   function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -1773,8 +1781,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     kitapenPertsonak.forEach(function(k){
       if ((k.izena || "").trim().toLowerCase() !== key) return;
       entries.push({
+        id: k.id,
         data: k.data, createdAt: k.createdAt || "",
-        deskribapena: null, kategoria: null,
+        deskribapena: k.deskribapena || null, kategoria: null,
         effect: -Number(k.kopurua), isSettlement: true,
         settlementType: k.mota || "kendu"
       });
@@ -1818,14 +1827,18 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     } else {
       listEl.innerHTML = entries.map(function(en){
         var descHtml, metaHtml;
+        var isTransfer = en.isSettlement && en.settlementType === "transferentzia";
         if (en.isSettlement){
-          descHtml = en.settlementType === "transferentzia" ? "Transferentzia" : "Kendu";
-          metaHtml = '<span class="badge badge-aitak">' + (en.settlementType === "transferentzia" ? "Transferentzia" : "Kenduta") + '</span>';
+          var baseLabel = isTransfer ? "Transferentzia" : "Kendu";
+          descHtml = en.deskribapena ? escapeHtml(en.deskribapena) : baseLabel;
+          metaHtml = '<span class="badge badge-aitak">' + (isTransfer ? "Transferentzia" : "Kenduta") + '</span>';
         } else {
           descHtml = escapeHtml(en.deskribapena || "(izenik gabe)");
           metaHtml = '<span class="chip">' + escapeHtml(en.kategoria || "—") + '</span>';
         }
-        return '<div class="panel person-detail-row' + ((en.paid || en.isSettlement) ? " paid" : "") + '">' +
+        var rowClass = "panel person-detail-row" + ((en.paid || en.isSettlement) ? " paid" : "") + (isTransfer ? " tappable" : "");
+        var rowAttrs = isTransfer ? ' data-action="edit-transferentzia" data-id="' + en.id + '"' : "";
+        return '<div class="' + rowClass + '"' + rowAttrs + '>' +
           '<div class="mov-date">' + fmtDataLaburra(en.data).replace("\n","<br>") + '</div>' +
           '<div class="info"><div class="desc">' + descHtml + '</div><div class="meta">' + metaHtml + '</div></div>' +
           '<div class="amount ' + (en.effect >= 0 ? "pos" : "neg") + '">' + fmtEuro(en.effect, true) + '</div>' +
@@ -1839,6 +1852,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   document.getElementById("btnPersonaXehetasunakClose").addEventListener("click", closePersonaXehetasunakModal);
   personaXehetasunakOverlay.addEventListener("click", function(e){ if (e.target === personaXehetasunakOverlay) closePersonaXehetasunakModal(); });
 
+  document.getElementById("personaXehetasunakList").addEventListener("click", function(e){
+    var row = e.target.closest('[data-action="edit-transferentzia"]');
+    if (!row) return;
+    var existing = kitapenPertsonak.find(function(k){ return k.id === row.getAttribute("data-id"); });
+    if (existing) openZorTransferentziaModal(existing.izena, existing);
+  });
+
   document.getElementById("btnPersonaKendu").addEventListener("click", function(){
     if (!currentPersonaIzena) return;
     var owed = 0;
@@ -1849,36 +1869,68 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   /* ---------- Zor transferentzia modal (a person hands over cash/Bizum, may exceed what's owed) ---------- */
   var zorTransferentziaOverlay = document.getElementById("modalZorTransferentzia");
   var zorTransferentziaForm = document.getElementById("zorTransferentziaForm");
+  var fZorTransferentziaId = document.getElementById("fZorTransferentziaId");
+  var fZorTransferentziaIzena = document.getElementById("fZorTransferentziaIzena");
+  var fZorTransferentziaDeskribapena = document.getElementById("fZorTransferentziaDeskribapena");
+  var fZorTransferentziaKopurua = document.getElementById("fZorTransferentziaKopurua");
+  var btnZorTransferentziaDelete = document.getElementById("btnZorTransferentziaDelete");
 
-  function openZorTransferentziaModal(izena){
+  function openZorTransferentziaModal(izena, existing){
     zorTransferentziaForm.reset();
     updatePeopleDatalist();
-    document.getElementById("zorTransferentziaTitle").textContent = "Transferentzia gehitu";
-    document.getElementById("fZorTransferentziaIzena").value = izena || "";
+    if (existing){
+      document.getElementById("zorTransferentziaTitle").textContent = "Transferentzia aldatu";
+      fZorTransferentziaId.value = existing.id;
+      fZorTransferentziaIzena.value = existing.izena;
+      fZorTransferentziaDeskribapena.value = existing.deskribapena || "";
+      fZorTransferentziaKopurua.value = Math.abs(Number(existing.kopurua));
+      btnZorTransferentziaDelete.style.display = "inline-block";
+    } else {
+      document.getElementById("zorTransferentziaTitle").textContent = "Transferentzia gehitu";
+      fZorTransferentziaId.value = "";
+      fZorTransferentziaIzena.value = izena || "";
+      btnZorTransferentziaDelete.style.display = "none";
+    }
     zorTransferentziaOverlay.classList.add("open");
   }
   function closeZorTransferentziaModal(){ zorTransferentziaOverlay.classList.remove("open"); }
 
-  document.getElementById("btnPersonaTransferentzia").addEventListener("click", function(){ openZorTransferentziaModal(currentPersonaIzena); });
-  document.getElementById("btnZorTransferentziaBerria").addEventListener("click", function(){ openZorTransferentziaModal(""); });
+  document.getElementById("btnPersonaTransferentzia").addEventListener("click", function(){ openZorTransferentziaModal(currentPersonaIzena, null); });
+  document.getElementById("btnZorTransferentziaBerria").addEventListener("click", function(){ openZorTransferentziaModal("", null); });
   document.getElementById("btnZorTransferentziaCancel").addEventListener("click", closeZorTransferentziaModal);
   zorTransferentziaOverlay.addEventListener("click", function(e){ if (e.target === zorTransferentziaOverlay) closeZorTransferentziaModal(); });
 
+  btnZorTransferentziaDelete.addEventListener("click", function(){
+    var id = fZorTransferentziaId.value;
+    if (!id) return;
+    var izena = fZorTransferentziaIzena.value;
+    if (window.confirm("Ziur transferentzia hau ezabau gurezule? Ekintza hau ezin da desegin.")){
+      var reopenDetail = personaXehetasunakOverlay.classList.contains("open");
+      deleteKitapenPertsona(id).then(function(){
+        closeZorTransferentziaModal();
+        if (reopenDetail) openPersonaXehetasunakModal(izena);
+      }).catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
+    }
+  });
+
   zorTransferentziaForm.addEventListener("submit", function(e){
     e.preventDefault();
-    var izena = document.getElementById("fZorTransferentziaIzena").value.trim();
+    var izena = fZorTransferentziaIzena.value.trim();
     if (!izena){ window.alert("Idatzi izen bat."); return; }
-    var entered = parseFloat(document.getElementById("fZorTransferentziaKopurua").value);
+    var entered = parseFloat(fZorTransferentziaKopurua.value);
     if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
+    var id = fZorTransferentziaId.value;
+    var existing = id ? kitapenPertsonak.find(function(k){ return k.id === id; }) : null;
     var reopenDetail = personaXehetasunakOverlay.classList.contains("open");
     var submitBtn = zorTransferentziaForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    saveKitapenPertsona({
+    saveKitapenPertsona(id || null, {
       izena: izena,
       kopurua: entered,
+      deskribapena: fZorTransferentziaDeskribapena.value.trim(),
       mota: "transferentzia",
-      data: todayStr(),
-      createdAt: new Date().toISOString()
+      data: existing ? existing.data : todayStr(),
+      createdAt: existing ? (existing.createdAt || new Date().toISOString()) : new Date().toISOString()
     }).then(function(){
       submitBtn.disabled = false;
       closeZorTransferentziaModal();
@@ -1903,7 +1955,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var direction = owed > 0 ? 1 : -1;
       signedKopurua = direction * entered;
     }
-    saveKitapenPertsona({
+    saveKitapenPertsona(null, {
       izena: currentZorPertsona.izena,
       kopurua: signedKopurua,
       mota: "kendu",
