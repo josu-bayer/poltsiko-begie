@@ -846,13 +846,21 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function movById(id){ return mugimenduak.find(function(m){ return m.id === id; }); }
 
   /* ---------- Ledger math ---------- */
+  function myShareAmount(m){
+    if ((m.nork === "neuk" || m.nork === "aitak") && m.partekatuak && m.partekatuak.length){
+      var shared = m.partekatuak.reduce(function(sum, s){ return sum + (Number(s.kopurua) || 0); }, 0);
+      return Math.round((Number(m.kopurua) - shared) * 100) / 100;
+    }
+    return Number(m.kopurua) || 0;
+  }
   function effectOnNeure(m){
     if (m.nork !== "neuk") return 0;
-    return m.mota === "sarrera" ? Number(m.kopurua) : -Number(m.kopurua);
+    var kopurua = myShareAmount(m);
+    return m.mota === "sarrera" ? kopurua : -kopurua;
   }
   function effectOnAitak(m){
     if (m.nork !== "aitak") return 0;
-    return Number(m.kopurua);
+    return myShareAmount(m);
   }
   function computeBalances(){
     var neure = config.neureHasiera, aitak = config.aitakHasiera;
@@ -1085,9 +1093,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var neureGastuak = 0, sarrerak = 0, aitakGastuak = 0;
     mugimenduak.forEach(function(m){
       if (monthKeyOf(m.data) !== visibleMonth) return;
-      if (m.nork === "neuk" && m.mota === "gastua") neureGastuak += Number(m.kopurua);
-      if (m.nork === "neuk" && m.mota === "sarrera") sarrerak += Number(m.kopurua);
-      if (m.nork === "aitak" && m.mota === "gastua") aitakGastuak += Number(m.kopurua);
+      if (m.nork === "neuk" && m.mota === "gastua") neureGastuak += myShareAmount(m);
+      if (m.nork === "neuk" && m.mota === "sarrera") sarrerak += myShareAmount(m);
+      if (m.nork === "aitak" && m.mota === "gastua") aitakGastuak += myShareAmount(m);
     });
     document.getElementById("statGastuak").textContent = fmtEuro(neureGastuak);
     document.getElementById("statSarrerak").textContent = fmtEuro(sarrerak);
@@ -2023,7 +2031,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
       var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
       rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
-      total += Number(m.kopurua) || 0;
+      total += myShareAmount(m);
     }
 
     if (norkFilter === "aitak"){
@@ -2035,7 +2043,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var running = config.aitakHasiera;
       var lastZeroAt = Math.abs(running) < 0.005 ? -1 : null;
       aitakChrono.forEach(function(m, idx){
-        running += Number(m.kopurua) || 0;
+        running += myShareAmount(m);
         if (Math.abs(running) < 0.005) lastZeroAt = idx;
       });
       if (lastZeroAt === null){
