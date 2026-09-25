@@ -626,6 +626,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <div class="bal-card-actions">
         <button type="button" class="btn btn-small btn-coral" id="btnPersonaKendu">Kendu</button>
         <button type="button" class="btn btn-small" id="btnPersonaTransferentzia">+ Transferentzia</button>
+        <button type="button" class="btn btn-small" id="btnPersonaCsv">CSV esporteu</button>
       </div>
       <div id="personaXehetasunakList"></div>
     </div>
@@ -1866,6 +1867,26 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     openZorKenduModal(currentPersonaIzena, owed);
   });
 
+  function exportPersonaCsv(izena){
+    var entries = personEntries(izena).slice().sort(function(a,b){ return (a.data+a.createdAt).localeCompare(b.data+b.createdAt); });
+    var rows = [["Data","Deskribapena","Kategoria","Mota","Kopurue"]];
+    var total = 0;
+    entries.forEach(function(en){
+      var isTransfer = en.isSettlement && en.settlementType === "transferentzia";
+      var motaLabel = en.isSettlement ? (isTransfer ? "Transferentzia" : "Kenduta") : "Zorra";
+      var desc = en.isSettlement ? (en.deskribapena || motaLabel) : (en.deskribapena || "(izenik gabe)");
+      rows.push([en.data, desc, en.kategoria || "", motaLabel, String(en.effect).replace(".", ",")]);
+      total += en.effect;
+    });
+    rows.push(["", "Dana", "", "", String(Math.round(total * 100) / 100).replace(".", ",")]);
+    var izenaSlug = izena.trim().toLowerCase().replace(/[^a-z0-9]+/gi, "-");
+    downloadCsv(rows, "poltsiko-begie-zorrak-" + izenaSlug + "-" + todayStr() + ".csv");
+  }
+
+  document.getElementById("btnPersonaCsv").addEventListener("click", function(){
+    if (currentPersonaIzena) exportPersonaCsv(currentPersonaIzena);
+  });
+
   /* ---------- Zor transferentzia modal (a person hands over cash/Bizum, may exceed what's owed) ---------- */
   var zorTransferentziaOverlay = document.getElementById("modalZorTransferentzia");
   var zorTransferentziaForm = document.getElementById("zorTransferentziaForm");
@@ -2070,6 +2091,25 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   /* ---------- CSV export ---------- */
+  function downloadCsv(rows, filename){
+    var csv = rows.map(function(r){
+      return r.map(function(cell){
+        cell = String(cell);
+        if (/[",;\n]/.test(cell)) cell = '"' + cell.replace(/"/g, '""') + '"';
+        return cell;
+      }).join(";");
+    }).join("\r\n");
+    var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
   setupSeg("segCsvNork");
 
   document.getElementById("btnExportCsv").addEventListener("click", function(){
@@ -2120,23 +2160,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         .forEach(pushMovRow);
     }
     rows.push(["", "Dana", "", "", "", String(Math.round(total * 100) / 100).replace(".", ","), ""]);
-    var csv = rows.map(function(r){
-      return r.map(function(cell){
-        cell = String(cell);
-        if (/[",;\n]/.test(cell)) cell = '"' + cell.replace(/"/g, '""') + '"';
-        return cell;
-      }).join(";");
-    }).join("\r\n");
-    var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
     var suffix = norkFilter === "guztiak" ? "" : ("-" + norkFilter);
-    a.download = "poltsiko-begie" + suffix + "-" + todayStr() + ".csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    downloadCsv(rows, "poltsiko-begie" + suffix + "-" + todayStr() + ".csv");
   });
 
   /* ---------- Init ---------- */
