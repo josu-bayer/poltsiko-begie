@@ -169,6 +169,8 @@ canvas#catChart{display:block;width:100%}
 .share-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .share-row .share-name{flex:2;min-width:0}
 .share-row .share-amount{flex:1;min-width:0}
+.share-row .share-payer{flex:none;height:34px;padding:0 10px;border-radius:10px;border:1px solid var(--panel-border);background:var(--bg-2);color:var(--muted);font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.share-row .share-payer.active{background:var(--accent-soft);color:var(--accent-bright);border-color:var(--accent-bright)}
 .share-row .share-remove{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--panel-border);background:var(--bg-2);color:var(--muted);font-size:16px;cursor:pointer;line-height:1}
 .hint{font-size:0.72rem;color:var(--muted);margin-top:6px;line-height:1.4}
 
@@ -878,6 +880,15 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
 
   /* ---------- Shared-expense (per-person) math ---------- */
+  // When a share row is marked as the payer, they fronted the whole bill: I owe
+  // them my own share, and the other people owe the payer, not me (null = skip).
+  function shareDebtEffect(m, s){
+    var payer = (m.partekatuak || []).find(function(x){ return x.ordaindu; });
+    if (!payer) return Number(s.kopurua) || 0;
+    if (s !== payer) return null;
+    return -myShareAmount(m);
+  }
+
   function computePersonBalances(){
     var map = {};
     mugimenduak.forEach(function(m){
@@ -886,9 +897,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         var izena = (s.izena || "").trim();
         var key = izena.toLowerCase();
         if (!key) return;
+        var effect = shareDebtEffect(m, s);
+        if (effect === null) return;
         if (!map[key]) map[key] = { izena: izena, owed: 0 };
         map[key].izena = izena;
-        map[key].owed += Number(s.kopurua) || 0;
+        map[key].owed += effect;
       });
     });
     kitapenPertsonak.forEach(function(k){
@@ -1377,15 +1390,25 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   }
 
-  function addShareRowTo(containerEl, totalInputEl, izena, kopurua){
+  function addShareRowTo(containerEl, totalInputEl, izena, kopurua, allowPayer, isPayer){
     var row = document.createElement("div");
     row.className = "share-row";
     row.innerHTML =
       '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
       '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
+      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek pagau dau dana">Pagau dau</button>' : '') +
       '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
-    row.querySelector(".share-amount").value = kopurua || "";
+    row.querySelector(".share-amount").value = (kopurua === "" || kopurua == null) ? "" : kopurua;
+    var payerBtn = row.querySelector(".share-payer");
+    if (payerBtn){
+      if (isPayer) payerBtn.classList.add("active");
+      payerBtn.addEventListener("click", function(){
+        var wasActive = payerBtn.classList.contains("active");
+        Array.prototype.forEach.call(containerEl.querySelectorAll(".share-payer"), function(b){ b.classList.remove("active"); });
+        if (!wasActive) payerBtn.classList.add("active");
+      });
+    }
     row.querySelector(".share-name").addEventListener("input", function(){ updateShareDefaultsFor(containerEl, totalInputEl); });
     row.querySelector(".share-remove").addEventListener("click", function(){
       row.remove();
@@ -1396,7 +1419,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   }
 
   function updateShareDefaults(){ updateShareDefaultsFor(shareRowsEl, fKopurua); }
-  function addShareRow(izena, kopurua){ addShareRowTo(shareRowsEl, fKopurua, izena, kopurua); }
+  function addShareRow(izena, kopurua, isPayer){ addShareRowTo(shareRowsEl, fKopurua, izena, kopurua, true, isPayer); }
 
   document.getElementById("btnAddShareRow").addEventListener("click", function(){ addShareRow("", ""); });
   fKopurua.addEventListener("input", updateShareDefaults);
@@ -1417,7 +1440,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       setSegValue("segNork", mov.nork);
       categoryManuallySet = true;
       btnMovDelete.style.display = "inline-block";
-      (mov.partekatuak || []).forEach(function(s){ addShareRow(s.izena, s.kopurua); });
+      (mov.partekatuak || []).forEach(function(s){ addShareRow(s.izena, s.kopurua, !!s.ordaindu); });
     } else {
       document.getElementById("modalMugimenduTitle").textContent = "Mugimendu barrie";
       fId.value = "";
@@ -1472,9 +1495,13 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var defaultShare = rows.length ? (kopurua / (rows.length + 1)) : 0;
       partekatuak = rows.map(function(row){
         var izena = row.querySelector(".share-name").value.trim();
-        var amountVal = parseFloat(row.querySelector(".share-amount").value);
-        var amount = (amountVal && amountVal > 0) ? amountVal : defaultShare;
-        return { izena: izena, kopurua: Math.round(amount * 100) / 100 };
+        var rawAmount = row.querySelector(".share-amount").value.trim();
+        var amountVal = parseFloat(rawAmount);
+        var amount = (rawAmount !== "" && amountVal >= 0) ? amountVal : defaultShare;
+        var entry = { izena: izena, kopurua: Math.round(amount * 100) / 100 };
+        var payerBtn = row.querySelector(".share-payer");
+        if (payerBtn && payerBtn.classList.contains("active")) entry.ordaindu = true;
+        return entry;
       });
     }
 
@@ -1772,10 +1799,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       if (!m.partekatuak) return;
       m.partekatuak.forEach(function(s){
         if ((s.izena || "").trim().toLowerCase() !== key) return;
+        var effect = shareDebtEffect(m, s);
+        if (effect === null) return;
         entries.push({
           data: m.data, createdAt: m.createdAt || "",
           deskribapena: m.deskribapena, kategoria: m.kategoria,
-          effect: Number(s.kopurua), isSettlement: false
+          effect: effect, isSettlement: false
         });
       });
     });
@@ -2121,7 +2150,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     function pushMovRow(m){
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
-      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ","); }).join(" / ");
+      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (pagau dau)" : ""); }).join(" / ");
       rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
       total += myShareAmount(m);
     }
