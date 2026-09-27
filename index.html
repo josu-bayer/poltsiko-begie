@@ -1396,7 +1396,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     row.innerHTML =
       '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
       '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
-      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek pagau dau dana">Pagau dau</button>' : '') +
+      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek pageu deu dana">Pageu deu</button>' : '') +
       '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
     row.querySelector(".share-amount").value = (kopurua === "" || kopurua == null) ? "" : kopurua;
@@ -2150,7 +2150,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     function pushMovRow(m){
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
-      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (pagau dau)" : ""); }).join(" / ");
+      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (pageu deu)" : ""); }).join(" / ");
       rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
       total += myShareAmount(m);
     }
