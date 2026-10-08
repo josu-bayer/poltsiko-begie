@@ -158,6 +158,10 @@ canvas#catChart{display:block;width:100%}
 .chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chip-removable{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);border:1px solid var(--panel-border);border-radius:99px;padding:6px 6px 6px 13px;font-size:0.82rem;font-weight:600;color:var(--accent-bright)}
 .chip-removable button{border:none;background:rgba(255,255,255,0.12);color:var(--ink);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1}
+.chip-removable button.chip-basic-toggle{width:auto;height:auto;background:none;border-radius:0;color:inherit;font:inherit;padding:0}
+.chip-removable.basic{background:var(--coral-soft);color:var(--coral);border-color:var(--coral)}
+.basic-summary{font-size:0.82rem;color:var(--muted);margin:-4px 0 10px}
+.basic-summary strong{color:var(--coral)}
 .add-row{display:flex;gap:8px}
 .add-row input{flex:1}
 .tmpl-list-item{display:flex;align-items:center;gap:10px;padding:11px 14px;margin-bottom:8px}
@@ -311,6 +315,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
     <div class="panel chart-card">
       <h3 id="catChartTitle">Kategoriaka</h3>
+      <p class="basic-summary" id="basicSummary"></p>
       <div class="chart-empty" id="catChartEmpty">Hile honetan ez dau gasturik</div>
       <canvas id="catChart"></canvas>
     </div>
@@ -366,6 +371,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <div class="settings-section">
       <h3>Kategoriak</h3>
       <p class="settings-hint">Neure kategoria zerrenda. Gehitu edo kendu nahi dituzunek.</p>
+      <p class="settings-hint">Sakatu kategoria baten izena oinarrizko gastue dala markatzeko (🏠).</p>
       <div class="chip-list" id="categoryChips"></div>
       <div class="add-row">
         <input type="text" id="newCategoryInput" placeholder="Kategoria barrie">
@@ -694,6 +700,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   /* ---------- Constants ---------- */
   var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraiue","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Claude","Mus","Bestelakuek"];
+  var DEFAULT_OINARRIZKOAK = ["Janarie","Alokairue","Etxeko gastuek","Osasune","Garraiue"];
   var HASIERAKO_AITAK = 250.00;
   var HASIERAKO_NEURE = -1000.00;
   var HASIERAKO_DATA = "2026-08-11";
@@ -705,7 +712,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   var mugimenduak = [];
   var txantiloiak = [];
   var kitapenPertsonak = [];
-  var config = { kategoriak: DEFAULT_KATEGORIAK.slice(), aitakHasiera: HASIERAKO_AITAK, neureHasiera: HASIERAKO_NEURE, hasierakoData: HASIERAKO_DATA };
+  var config = { kategoriak: DEFAULT_KATEGORIAK.slice(), oinarrizkoak: DEFAULT_OINARRIZKOAK.slice(), aitakHasiera: HASIERAKO_AITAK, neureHasiera: HASIERAKO_NEURE, hasierakoData: HASIERAKO_DATA };
   var visibleMonth = todayStr().slice(0,7);
   var visibleYear = parseInt(todayStr().slice(0,4), 10);
   var categoryManuallySet = false;
@@ -755,6 +762,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       if (snap.exists()){
         var d = snap.data();
         config.kategoriak = d.kategoriak || DEFAULT_KATEGORIAK.slice();
+        config.oinarrizkoak = Array.isArray(d.oinarrizkoak) ? d.oinarrizkoak : DEFAULT_OINARRIZKOAK.slice();
         config.aitakHasiera = typeof d.aitakHasiera === "number" ? d.aitakHasiera : HASIERAKO_AITAK;
         config.neureHasiera = typeof d.neureHasiera === "number" ? d.neureHasiera : HASIERAKO_NEURE;
         config.hasierakoData = d.hasierakoData || HASIERAKO_DATA;
@@ -1124,8 +1132,27 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     document.getElementById("statAitakGastuak").textContent = fmtEuro(aitakGastuak);
   }
 
+  function renderBasicSummary(){
+    var basic = 0, gastuak = 0, sarrerak = 0;
+    mugimenduak.forEach(function(m){
+      if (m.nork !== "neuk" || monthKeyOf(m.data) !== visibleMonth) return;
+      if (m.mota === "sarrera"){ sarrerak += myShareAmount(m); return; }
+      if (m.mota !== "gastua") return;
+      var amount = myShareAmount(m);
+      gastuak += amount;
+      if (config.oinarrizkoak.indexOf(m.kategoria) >= 0) basic += amount;
+    });
+    var el = document.getElementById("basicSummary");
+    if (gastuak <= 0){ el.style.display = "none"; return; }
+    var text = "🏠 Oinarrizkoak: <strong>" + fmtEuro(basic) + "</strong> · gastuen %" + Math.round(basic / gastuak * 100);
+    if (sarrerak > 0) text += " · sarreren %" + Math.round(basic / sarrerak * 100);
+    el.innerHTML = text;
+    el.style.display = "block";
+  }
+
   function renderCategoryChartSection(){
     document.getElementById("catChartTitle").textContent = "Kategoriaka — " + monthLabel(visibleMonth);
+    renderBasicSummary();
     drawCategoryChart();
     document.getElementById("incomeChartTitle").textContent = "Sarrerak kategoriaka — " + monthLabel(visibleMonth);
     drawIncomeChart();
@@ -1242,7 +1269,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var el = document.getElementById("categoryChips");
     if (!config.kategoriak.length){ el.innerHTML = '<span class="settings-hint">Ez dau kategoriarik</span>'; return; }
     el.innerHTML = config.kategoriak.map(function(k){
-      return '<span class="chip-removable">' + escapeHtml(k) + '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabau">×</button></span>';
+      var isBasic = config.oinarrizkoak.indexOf(k) >= 0;
+      return '<span class="chip-removable' + (isBasic ? ' basic' : '') + '">' +
+        '<button type="button" class="chip-basic-toggle" data-basic-cat="' + escapeHtml(k) + '">' + (isBasic ? '🏠 ' : '') + escapeHtml(k) + '</button>' +
+        '<button type="button" data-cat="' + escapeHtml(k) + '" aria-label="Ezabau">×</button></span>';
     }).join("");
   }
 
@@ -2029,11 +2059,23 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   document.getElementById("categoryChips").addEventListener("click", function(e){
+    var toggle = e.target.closest("button[data-basic-cat]");
+    if (toggle){
+      var basicCat = toggle.getAttribute("data-basic-cat");
+      var list = config.oinarrizkoak.indexOf(basicCat) >= 0
+        ? config.oinarrizkoak.filter(function(c){ return c !== basicCat; })
+        : config.oinarrizkoak.concat([basicCat]);
+      setDoc(doc(db, "meta", "config"), { oinarrizkoak: list }, { merge: true });
+      return;
+    }
     var btn = e.target.closest("button[data-cat]");
     if (!btn) return;
     var cat = btn.getAttribute("data-cat");
     if (window.confirm('"' + cat + '" kategoria kendu gurezu? Kategoria hau erabili dedian mugimenduek testue gordeko dedia.')){
-      updateConfigCategories(config.kategoriak.filter(function(c){ return c !== cat; }));
+      setDoc(doc(db, "meta", "config"), {
+        kategoriak: config.kategoriak.filter(function(c){ return c !== cat; }),
+        oinarrizkoak: config.oinarrizkoak.filter(function(c){ return c !== cat; })
+      }, { merge: true });
     }
   });
 
