@@ -2213,8 +2213,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
       var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (pageu deu)" : ""); }).join(" / ");
-      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(m.kopurua).replace(".", ","), partekatuLabel]);
-      total += myShareAmount(m);
+      var amount = myShareAmount(m);
+      // Show the amount that counts so the column adds up to the total; keep the full price next to the split.
+      if (partekatuLabel && amount !== Number(m.kopurua)) partekatuLabel = "Dana " + String(m.kopurua).replace(".", ",") + " · " + partekatuLabel;
+      rows.push([m.data, m.deskribapena||"", m.kategoria||"", motaLabel, norkLabel, String(amount).replace(".", ","), partekatuLabel]);
+      total += amount;
     }
 
     if (norkFilter === "aitak"){
