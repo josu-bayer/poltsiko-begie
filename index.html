@@ -514,7 +514,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     <form id="transferentziaForm">
       <div class="field">
         <label for="fTransferentziaKopurua">Kopurue (&euro;)</label>
-        <input type="number" id="fTransferentziaKopurua" min="0.01" step="0.01" inputmode="decimal" required>
+        <input type="number" id="fTransferentziaKopurua" step="0.01" required>
+        <div class="hint">Aitak emondakoa: positiboa. Neuk aitari emondakoa: negatiboa (adib. -50).</div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="btnTransferentziaCancel">Utzi</button>
@@ -1674,7 +1675,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
   });
 
-  /* ---------- Transferentzia modal (dad hands over cash, may exceed what's owed) ---------- */
+  /* ---------- Transferentzia modal (positive: dad hands over cash; negative: I pay dad) ---------- */
   var transferentziaOverlay = document.getElementById("modalTransferentzia");
   var transferentziaForm = document.getElementById("transferentziaForm");
 
@@ -1691,7 +1692,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   transferentziaForm.addEventListener("submit", function(e){
     e.preventDefault();
     var entered = parseFloat(document.getElementById("fTransferentziaKopurua").value);
-    if (!entered || entered <= 0){ window.alert("Idatzi balio deuen kopuru bat."); return; }
+    if (!entered){ window.alert("Idatzi balio deuen kopuru bat."); return; }
     var data = {
       data: todayStr(),
       deskribapena: "Transferentzia",
