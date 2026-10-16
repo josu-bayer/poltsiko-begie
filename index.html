@@ -1649,6 +1649,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       nork: "aitak",
       createdAt: new Date().toISOString()
     };
+    if (mode === "osorik") data.osoa = true;
     var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     setDoc(doc(db, "mugimenduak", id), data).then(closeKitatuModal).catch(function(err){
       window.alert("Ezin izan da kendu: " + err.message);
@@ -2198,24 +2199,26 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     }
 
     if (norkFilter === "aitak"){
-      // Only export what happened since the last time the Aitak balance was exactly net 0 -
-      // everything before that nets to nothing and is redundant history.
+      // Only export what happened since the balance was last settled to 0. A full settle-up
+      // counts even if replaying history today no longer lands on exactly 0 (later edits or
+      // math changes can shift old entries); any such leftover is carried over as the opening
+      // row so the exported total still matches the on-screen balance.
       var aitakChrono = mugimenduak.filter(function(m){ return m.nork === "aitak"; })
         .slice()
         .sort(function(a,b){ return (a.data+(a.createdAt||"")).localeCompare(b.data+(b.createdAt||"")); });
-      var running = config.aitakHasiera;
-      var lastZeroAt = Math.abs(running) < 0.005 ? -1 : null;
+      var running = Number(config.aitakHasiera) || 0;
+      var cutAt = -1, cutBalance = running, cutDate = config.hasierakoData;
       aitakChrono.forEach(function(m, idx){
         running += myShareAmount(m);
-        if (Math.abs(running) < 0.005) lastZeroAt = idx;
+        var fullSettle = m.mota === "kitapena" && (m.osoa || m.deskribapena === "Kenketa (osoa)");
+        if (fullSettle || Math.abs(running) < 0.005){ cutAt = idx; cutBalance = running; cutDate = m.data; }
       });
-      if (lastZeroAt === null){
-        rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
-        total += Number(config.aitakHasiera) || 0;
-        aitakChrono.forEach(pushMovRow);
-      } else {
-        aitakChrono.slice(lastZeroAt + 1).forEach(pushMovRow);
+      cutBalance = Math.round(cutBalance * 100) / 100;
+      if (Math.abs(cutBalance) >= 0.005){
+        rows.push([cutDate, "Hasikerako saldue", "", "", "Aitak", String(cutBalance).replace(".", ","), ""]);
+        total += cutBalance;
       }
+      aitakChrono.slice(cutAt + 1).forEach(pushMovRow);
     } else {
       if (norkFilter === "guztiak"){
         rows.push([config.hasierakoData, "Hasikerako saldue", "", "", "Aitak", String(config.aitakHasiera).replace(".", ","), ""]);
