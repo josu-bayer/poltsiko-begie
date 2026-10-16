@@ -619,6 +619,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <input type="number" id="fZorKenduKopurua" min="0.01" step="0.01" inputmode="decimal">
     </div>
 
+    <div class="field" id="zorKenduKategoriaField" style="display:none">
+      <label for="fZorKenduKategoria">Kategoria</label>
+      <select id="fZorKenduKategoria"></select>
+      <div class="hint">Pagetakoa neure gastuetan sartuko da.</div>
+    </div>
+
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="btnZorKenduCancel">Utzi</button>
       <button type="button" class="btn btn-coral" id="btnZorKenduConfirm">Kendu</button>
@@ -884,12 +890,19 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function movById(id){ return mugimenduak.find(function(m){ return m.id === id; }); }
 
   /* ---------- Ledger math ---------- */
-  function myShareAmount(m){
+  function ownPortion(m){
     if ((m.nork === "neuk" || m.nork === "aitak") && m.partekatuak && m.partekatuak.length){
       var shared = m.partekatuak.reduce(function(sum, s){ return sum + (Number(s.kopurua) || 0); }, 0);
       return Math.round((Number(m.kopurua) - shared) * 100) / 100;
     }
     return Number(m.kopurua) || 0;
+  }
+  function hasPayer(m){ return !!(m.partekatuak && m.partekatuak.some(function(s){ return s.ordaindu; })); }
+  // When someone else paid ("Pageu deu"), my portion becomes a debt and only counts as my
+  // expense once I pay it back with Kendu (which creates its own expense entry).
+  function myShareAmount(m){
+    if ((m.nork === "neuk" || m.nork === "aitak") && hasPayer(m)) return 0;
+    return ownPortion(m);
   }
   function effectOnNeure(m){
     if (m.nork !== "neuk") return 0;
@@ -913,7 +926,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var payer = (m.partekatuak || []).find(function(x){ return x.ordaindu; });
     if (!payer) return Number(s.kopurua) || 0;
     if (s !== payer) return null;
-    return -myShareAmount(m);
+    return -ownPortion(m);
   }
 
   function computePersonBalances(){
@@ -1032,6 +1045,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     mugimenduak.forEach(function(m){
       if (m.mota !== mota) return;
       if (monthKeyOf(m.data) !== monthKey) return;
+      if (hasPayer(m)) return;
       totals[m.kategoria] = (totals[m.kategoria] || 0) + Number(m.kopurua);
     });
     var list = Object.keys(totals).map(function(k){ return { kategoria: k, kopurua: totals[k] }; });
@@ -1822,6 +1836,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     setSegValue("segZorKenduMoo", "osorik");
     document.getElementById("zorKenduPartialField").style.display = "none";
     document.getElementById("fZorKenduKopurua").value = "";
+    document.getElementById("zorKenduKategoriaField").style.display = owed < -0.005 ? "block" : "none";
+    populateCategorySelect(document.getElementById("fZorKenduKategoria"), "");
     zorKenduOverlay.classList.add("open");
   }
   function closeZorKenduModal(){ zorKenduOverlay.classList.remove("open"); }
@@ -2055,13 +2071,31 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       var direction = owed > 0 ? 1 : -1;
       signedKopurua = direction * entered;
     }
-    saveKitapenPertsona(null, {
-      izena: currentZorPertsona.izena,
+    var iPay = owed < 0;
+    var kategoria = document.getElementById("fZorKenduKategoria").value;
+    if (iPay && !kategoria){ window.alert("Aukeratu kategoria bat."); return; }
+    var izena = currentZorPertsona.izena;
+    var now = new Date().toISOString();
+    var writes = [saveKitapenPertsona(null, {
+      izena: izena,
       kopurua: signedKopurua,
       mota: "kendu",
       data: todayStr(),
-      createdAt: new Date().toISOString()
-    }).then(closeZorKenduModal).catch(function(err){
+      createdAt: now
+    })];
+    if (iPay){
+      writes.push(saveMugimendu(null, {
+        data: todayStr(),
+        deskribapena: "Kendu: " + izena,
+        kategoria: kategoria,
+        kopurua: Math.round(Math.abs(signedKopurua) * 100) / 100,
+        mota: "gastua",
+        nork: "neuk",
+        partekatuak: [],
+        createdAt: now
+      }));
+    }
+    Promise.all(writes).then(closeZorKenduModal).catch(function(err){
       window.alert("Ezin izan da kendu: " + err.message);
     });
   });
