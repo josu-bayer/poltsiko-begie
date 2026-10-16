@@ -680,7 +680,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import {
     initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-    collection, doc, setDoc, deleteDoc, getDoc, onSnapshot
+    collection, doc, setDoc as fsSetDoc, deleteDoc as fsDeleteDoc, getDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
   /* ---------- Firebase setup ---------- */
@@ -697,6 +697,24 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   var db = initializeFirestore(fbApp, {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
   });
+
+  // Offline, Firestore applies a write locally at once but its promise only settles when the
+  // server confirms, which left forms stuck with a disabled button. Treat the local write as
+  // done after a moment; a later server rejection still surfaces as an alert.
+  function localWrite(p){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      p.then(function(v){
+        if (!settled){ settled = true; resolve(v); }
+      }, function(err){
+        if (!settled){ settled = true; reject(err); }
+        else window.alert("Ezin izan da gorde: " + err.message);
+      });
+      setTimeout(function(){ if (!settled){ settled = true; resolve(); } }, 1200);
+    });
+  }
+  function setDoc(ref, data, opts){ return localWrite(opts ? fsSetDoc(ref, data, opts) : fsSetDoc(ref, data)); }
+  function deleteDoc(ref){ return localWrite(fsDeleteDoc(ref)); }
 
   /* ---------- Constants ---------- */
   var DEFAULT_KATEGORIAK = ["Janarie","Alokairue","Garraiue","Etxeko gastuek","Pintxopo","Kanpoan jan","Bidaiek","Osasune","Teknologie","Claude","Mus","Bestelakuek"];
