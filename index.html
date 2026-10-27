@@ -206,6 +206,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   background:var(--bg-2);color:var(--ink);font-family:inherit;font-size:0.95rem;
 }
 .field select{appearance:auto;color-scheme:dark}
+.mov-search{width:100%;padding:10px 12px;margin-bottom:10px;border-radius:10px;border:1px solid var(--panel-border);background:var(--bg-2);color:var(--ink);font-family:inherit;font-size:0.95rem;color-scheme:dark}
 .field input[type="date"]{color-scheme:dark}
 .seg{display:flex;border:1px solid var(--panel-border);border-radius:12px;overflow:hidden}
 .seg button{flex:1;padding:9px;border:none;background:var(--bg-2);color:var(--ink);font-family:'Inter',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer}
@@ -335,6 +336,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <h3 id="movCount">Mugimenduek</h3>
       <button class="btn btn-primary" id="btnBerria" type="button">+ Barrie</button>
     </div>
+
+    <input type="search" class="mov-search" id="movSearch" placeholder="🔍 Bilau (hile guztietan)" autocomplete="off">
 
     <section class="mov-list" id="movList" aria-label="Mugimenduek"></section>
   </section>
@@ -863,6 +866,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     return str + " €";
   }
 
+  function normalizeSearch(s){ return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
   function fmtDataLaburra(iso){
     var parts = iso.split("-");
     var d = parseInt(parts[2], 10), m = parseInt(parts[1], 10) - 1;
@@ -1209,12 +1213,19 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function renderMovList(){
     var el = document.getElementById("movList");
     var countEl = document.getElementById("movCount");
-    var monthMovs = mugimenduak.filter(function(m){ return monthKeyOf(m.data) === visibleMonth; });
+    // While searching, every month is searched; otherwise only the visible month is listed.
+    var words = normalizeSearch(document.getElementById("movSearch").value).split(/\s+/).filter(Boolean);
+    var monthMovs = mugimenduak.filter(function(m){
+      if (!words.length) return monthKeyOf(m.data) === visibleMonth;
+      var haystack = normalizeSearch([m.deskribapena, m.kategoria, m.data, fmtEuro(Number(m.kopurua))]
+        .concat((m.partekatuak || []).map(function(s){ return s.izena; })).join(" "));
+      return words.every(function(w){ return haystack.indexOf(w) >= 0; });
+    });
     monthMovs.sort(function(a,b){ return (b.data+(b.createdAt||"")).localeCompare(a.data+(a.createdAt||"")); });
-    countEl.textContent = "Mugimenduek (" + monthMovs.length + ")";
+    countEl.textContent = (words.length ? "🔍 " : "") + "Mugimenduek (" + monthMovs.length + ")";
 
     if (!monthMovs.length){
-      el.innerHTML = '<div class="panel empty">Hile honetan ez dau mugimendurik.</div>';
+      el.innerHTML = '<div class="panel empty">' + (words.length ? "Ez dau mugimendurik." : "Hile honetan ez dau mugimendurik.") + '</div>';
       return;
     }
 
@@ -1544,6 +1555,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   fKategoria.addEventListener("change", function(){ categoryManuallySet = true; });
 
   document.getElementById("btnBerria").addEventListener("click", function(){ openMovForm(null); });
+  document.getElementById("movSearch").addEventListener("input", renderMovList);
   document.getElementById("btnMovCancel").addEventListener("click", closeMovForm);
   movOverlay.addEventListener("click", function(e){ if (e.target === movOverlay) closeMovForm(); });
 
