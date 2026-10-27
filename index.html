@@ -469,7 +469,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field" id="fieldZordun" style="display:none">
-        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="fZordunCheck"> Oiñekarren ez deu pageu</label>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="fZordunCheck"> Oiñekarren ez deu page</label>
         <input type="text" id="fZordunIzena" list="peopleList" placeholder="Izena" style="display:none;margin-top:8px">
         <div class="hint" id="fZordunHint" style="display:none">Zorrak atalean geratuko da. Pagetakoan, sakatu Kendu ta sarrera izango da.</div>
       </div>
@@ -908,7 +908,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     return Number(m.kopurua) || 0;
   }
   function hasPayer(m){ return !!(m.partekatuak && m.partekatuak.some(function(s){ return s.ordaindu; })); }
-  // When someone else paid ("Pageu deu"), my portion becomes a debt and only counts as my
+  // When someone else paid ("Page deu"), my portion becomes a debt and only counts as my
   // expense once I pay it back with Kendu (which creates its own expense entry).
   function myShareAmount(m){
     if ((m.nork === "neuk" || m.nork === "aitak") && hasPayer(m)) return 0;
@@ -1484,7 +1484,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     row.innerHTML =
       '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
       '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
-      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek dana page deu">Pageu deu</button>' : '') +
+      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek dana page deu">Page deu</button>' : '') +
       '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
     row.querySelector(".share-amount").value = (kopurua === "" || kopurua == null) ? "" : kopurua;
