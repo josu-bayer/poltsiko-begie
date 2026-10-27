@@ -1895,8 +1895,8 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     document.getElementById("zorKenduTitle").textContent = izena + " kendu";
     var info;
     if (Math.abs(owed) < 0.005) info = "Dana kenduta dau (0,00 €).";
-    else if (owed > 0) info = izena + " <strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
-    else info = izena + "-ri <strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor dotzezu.";
+    else if (owed > 0) info = escapeHtml(izena) + " <strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
+    else info = escapeHtml(izena) + "-ri <strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor dotzezu.";
     document.getElementById("zorKenduInfo").innerHTML = info;
     setSegValue("segZorKenduMoo", "osorik");
     document.getElementById("zorKenduPartialField").style.display = "none";
