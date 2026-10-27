@@ -266,7 +266,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <h1>Poltsiko Begie</h1>
       <p>Aitak pagetakuek ta neure gastuek, leku berean</p>
     </div>
-    <button class="btn btn-small btn-ghost" id="btnRefresh" type="button" title="Eguneratzeak bilau" style="margin-left:auto">
+    <button class="btn btn-small btn-ghost" id="btnRefresh" type="button" title="Eguneratzeak topeu" style="margin-left:auto">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px">
         <path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v6h-6"/>
       </svg>
@@ -337,7 +337,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       <button class="btn btn-primary" id="btnBerria" type="button">+ Barrie</button>
     </div>
 
-    <input type="search" class="mov-search" id="movSearch" placeholder="🔍 Bilau (hile guztietan)" autocomplete="off">
+    <input type="search" class="mov-search" id="movSearch" placeholder="🔍 Topeu (hile guztietan)" autocomplete="off">
 
     <section class="mov-list" id="movList" aria-label="Mugimenduek"></section>
   </section>
@@ -419,7 +419,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   </section>
 
   <footer>
-    Datuek hodeian sinkronizauta (Firebase). Esteka hau dekon edonork ikusi eta editeu ahal deu.<br>
+    Datuek hodeian sinkronizeuta (Firebase). Esteka hau dekon edonork ikusi eta editeu ahal deu.<br>
     Poltsiko Begie &mdash; aitak pagetakuek ta neure gastuen kontrola.
   </footer>
 </div>
@@ -469,7 +469,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       </div>
 
       <div class="field" id="fieldZordun" style="display:none">
-        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="fZordunCheck"> Oraindik ez deu pageu</label>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="fZordunCheck"> Oiñekarren ez deu pageu</label>
         <input type="text" id="fZordunIzena" list="peopleList" placeholder="Izena" style="display:none;margin-top:8px">
         <div class="hint" id="fZordunHint" style="display:none">Zorrak atalean geratuko da. Pagetakoan, sakatu Kendu ta sarrera izango da.</div>
       </div>
@@ -778,10 +778,10 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
       el.textContent = "Offline";
       el.className = "sync-status offline";
     } else if (anyPending){
-      el.textContent = "Ez sinkronizauta";
+      el.textContent = "Ez dau sinkronizeuta";
       el.className = "sync-status pending";
     } else {
-      el.textContent = "Sinkronizauta";
+      el.textContent = "Sinkronizeuta";
       el.className = "sync-status online";
     }
   }
@@ -1160,7 +1160,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var prevBtn = document.getElementById("btnMonthPrev");
     var atStart = visibleMonth <= creationMonthKey();
     prevBtn.disabled = atStart;
-    prevBtn.title = atStart ? "Poltsiko Begie oraindik ez zen existitzen" : "";
+    prevBtn.title = atStart ? "Poltsiko Begie oiñekarren ez zen existitzen" : "";
   }
 
   function renderMonthStats(){
@@ -1274,7 +1274,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var creationYear = parseInt(creationMonthKey().slice(0,4), 10);
     var yearPrevBtn = document.getElementById("btnYearPrev");
     yearPrevBtn.disabled = visibleYear <= creationYear;
-    yearPrevBtn.title = yearPrevBtn.disabled ? "Poltsiko Begie oraindik ez zen existitzen" : "";
+    yearPrevBtn.title = yearPrevBtn.disabled ? "Poltsiko Begie oiñekarren ez zen existitzen" : "";
     document.getElementById("creationNote").textContent =
       "Poltsiko Begie sortze data: " + config.hasierakoData + ". Aurreko hilabeteek ez daukate daturik.";
 
@@ -1484,7 +1484,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     row.innerHTML =
       '<input type="text" class="share-name" list="peopleList" placeholder="Izena">' +
       '<input type="number" class="share-amount" min="0" step="0.01" inputmode="decimal" placeholder="€">' +
-      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek pageu deu dana">Pageu deu</button>' : '') +
+      (allowPayer ? '<button type="button" class="share-payer" title="Pertsona honek dana page deu">Pageu deu</button>' : '') +
       '<button type="button" class="share-remove" aria-label="Ezabau">×</button>';
     row.querySelector(".share-name").value = izena || "";
     row.querySelector(".share-amount").value = (kopurua === "" || kopurua == null) ? "" : kopurua;
@@ -1985,7 +1985,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var owed = 0;
     personEntries(izena).forEach(function(en){ owed += en.effect; });
     var info;
-    if (Math.abs(owed) < 0.005) info = "Kenduta zaudete.";
+    if (Math.abs(owed) < 0.005) info = "Kenduta zauzie.";
     else if (owed > 0) info = "<strong>" + fmtEuro(owed) + "</strong> zor dotzu.";
     else info = "<strong>" + fmtEuro(Math.abs(owed)) + "</strong> zor dotzezu.";
     document.getElementById("personaXehetasunakInfo").innerHTML = info;
@@ -1993,7 +1993,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var entries = personEntries(izena);
     var listEl = document.getElementById("personaXehetasunakList");
     if (!entries.length){
-      listEl.innerHTML = '<div class="panel empty">Ez dago mugimendurik.</div>';
+      listEl.innerHTML = '<div class="panel empty">Ez dau mugimendurik.</div>';
     } else {
       listEl.innerHTML = entries.map(function(en){
         var descHtml, metaHtml;
@@ -2346,7 +2346,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     function pushMovRow(m){
       var motaLabel = motaLabelak[m.mota] || m.mota;
       var norkLabel = m.nork === "aitak" ? "Aitak" : m.nork === "beste" ? "Beste" : "Neuk";
-      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (pageu deu)" : ""); }).join(" / ");
+      var partekatuLabel = (m.partekatuak || []).map(function(s){ return s.izena + ":" + String(s.kopurua).replace(".", ",") + (s.ordaindu ? " (page deu)" : ""); }).join(" / ");
       var amount = myShareAmount(m);
       // Show the amount that counts so the column adds up to the total; keep the full price next to the split.
       if (partekatuLabel && amount !== Number(m.kopurua)) partekatuLabel = "Dana " + String(m.kopurua).replace(".", ",") + " · " + partekatuLabel;
