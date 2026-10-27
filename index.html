@@ -1053,10 +1053,11 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function getCategoryTotals(monthKey, mota){
     var totals = {};
     mugimenduak.forEach(function(m){
-      if (m.mota !== mota) return;
+      if (m.mota !== mota || m.nork !== "neuk") return;
       if (monthKeyOf(m.data) !== monthKey) return;
-      if (hasPayer(m)) return;
-      totals[m.kategoria] = (totals[m.kategoria] || 0) + Number(m.kopurua);
+      var amount = myShareAmount(m);
+      if (amount <= 0) return;
+      totals[m.kategoria] = (totals[m.kategoria] || 0) + amount;
     });
     var list = Object.keys(totals).map(function(k){ return { kategoria: k, kopurua: totals[k] }; });
     list.sort(function(a,b){ return b.kopurua - a.kopurua; });
