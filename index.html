@@ -465,6 +465,12 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
         <input type="number" id="fKopurua" min="0.01" step="0.01" inputmode="decimal" required>
       </div>
 
+      <div class="field" id="fieldZordun" style="display:none">
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="fZordunCheck"> Oraindik ez deu pageu</label>
+        <input type="text" id="fZordunIzena" list="peopleList" placeholder="Izena" style="display:none;margin-top:8px">
+        <div class="hint" id="fZordunHint" style="display:none">Zorrak atalean geratuko da. Pagetakoan, sakatu Kendu ta sarrera izango da.</div>
+      </div>
+
       <div class="field" id="fieldShare">
         <label>Nogaz partekatuzu? (aukerakoa)</label>
         <div id="shareRows"></div>
@@ -1428,7 +1434,14 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   function updateShareFieldVisibility(){
     var mota = getSegValue("segMota");
     fieldShare.style.display = mota === "sarrera" ? "none" : "block";
+    document.getElementById("fieldZordun").style.display = (mota === "sarrera" && !fId.value) ? "block" : "none";
   }
+  function updateZordunVisibility(){
+    var on = document.getElementById("fZordunCheck").checked;
+    document.getElementById("fZordunIzena").style.display = on ? "block" : "none";
+    document.getElementById("fZordunHint").style.display = on ? "block" : "none";
+  }
+  document.getElementById("fZordunCheck").addEventListener("change", updateZordunVisibility);
 
   setupSeg("segMota", function(){ updateNorkFieldVisibility(); updateShareFieldVisibility(); });
   setupSeg("segNork");
@@ -1489,6 +1502,7 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
 
   function openMovForm(mov){
     movForm.reset();
+    updateZordunVisibility();
     updateMerchantDatalist();
     updatePeopleDatalist();
     shareRowsEl.innerHTML = "";
@@ -1549,6 +1563,30 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var kopurua = parseFloat(fKopurua.value) || 0;
     if (!fKategoria.value){ window.alert("Aukeratu kategoria bat."); return; }
     if (kopurua <= 0){ window.alert("Kopurue 0 baino handiaua izan ber da."); return; }
+
+    // Unpaid income: store it as a debt the person owes me; it becomes a Sarrera when settled with Kendu.
+    if (mota === "sarrera" && !id && document.getElementById("fZordunCheck").checked){
+      var zordun = document.getElementById("fZordunIzena").value.trim();
+      if (!zordun){ window.alert("Idatzi izen bat."); return; }
+      var zorBtn = movForm.querySelector('button[type="submit"]');
+      zorBtn.disabled = true;
+      saveKitapenPertsona(null, {
+        izena: zordun,
+        kopurua: -kopurua,
+        mota: "sarrera-zorra",
+        deskribapena: fDeskribapena.value.trim(),
+        kategoria: fKategoria.value,
+        data: fData.value,
+        createdAt: new Date().toISOString()
+      }).then(function(){
+        zorBtn.disabled = false;
+        closeMovForm();
+      }).catch(function(err){
+        zorBtn.disabled = false;
+        window.alert("Ezin izan da gorde: " + err.message);
+      });
+      return;
+    }
 
     var partekatuak = [];
     if (mota === "gastua"){
@@ -1825,6 +1863,20 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     document.getElementById("zorKenduPartialField").style.display = v === "zati" ? "block" : "none";
   });
 
+  // Unpaid income still owed by this person: their "sarrera-zorra" debts minus income already
+  // recognised by earlier Kendu settlements. The category comes from their oldest such debt.
+  function pendingIncomeFor(izena){
+    var key = izena.trim().toLowerCase(), amount = 0, kategoria = null;
+    kitapenPertsonak.slice()
+      .sort(function(a,b){ return ((a.data||"")+(a.createdAt||"")).localeCompare((b.data||"")+(b.createdAt||"")); })
+      .forEach(function(k){
+        if ((k.izena || "").trim().toLowerCase() !== key) return;
+        if (k.mota === "sarrera-zorra"){ amount += -Number(k.kopurua) || 0; if (!kategoria) kategoria = k.kategoria; }
+        if (k.sarreraKopurua) amount -= Number(k.sarreraKopurua) || 0;
+      });
+    return { amount: Math.max(0, Math.round(amount * 100) / 100), kategoria: kategoria || "Bestelakuek" };
+  }
+
   function openZorKenduModal(izena, owed){
     currentZorPertsona = { izena: izena, owed: owed };
     document.getElementById("zorKenduTitle").textContent = izena + " kendu";
@@ -1876,6 +1928,15 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     });
     kitapenPertsonak.forEach(function(k){
       if ((k.izena || "").trim().toLowerCase() !== key) return;
+      if (k.mota === "sarrera-zorra"){
+        entries.push({
+          id: k.id, isIncomeDebt: true,
+          data: k.data, createdAt: k.createdAt || "",
+          deskribapena: k.deskribapena, kategoria: k.kategoria,
+          effect: -Number(k.kopurua), isSettlement: false
+        });
+        return;
+      }
       entries.push({
         id: k.id,
         data: k.data, createdAt: k.createdAt || "",
@@ -1932,8 +1993,9 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
           descHtml = escapeHtml(en.deskribapena || "(izenik gabe)");
           metaHtml = '<span class="chip">' + escapeHtml(en.kategoria || "—") + '</span>';
         }
-        var rowClass = "panel person-detail-row" + ((en.paid || en.isSettlement) ? " paid" : "") + (isTransfer ? " tappable" : "");
-        var rowAttrs = isTransfer ? ' data-action="edit-transferentzia" data-id="' + en.id + '"' : "";
+        var rowClass = "panel person-detail-row" + ((en.paid || en.isSettlement) ? " paid" : "") + ((isTransfer || en.isIncomeDebt) ? " tappable" : "");
+        var rowAttrs = isTransfer ? ' data-action="edit-transferentzia" data-id="' + en.id + '"'
+          : en.isIncomeDebt ? ' data-action="delete-sarrera-zorra" data-id="' + en.id + '"' : "";
         return '<div class="' + rowClass + '"' + rowAttrs + '>' +
           '<div class="mov-date">' + fmtDataLaburra(en.data).replace("\n","<br>") + '</div>' +
           '<div class="info"><div class="desc">' + descHtml + '</div><div class="meta">' + metaHtml + '</div></div>' +
@@ -1949,6 +2011,15 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   personaXehetasunakOverlay.addEventListener("click", function(e){ if (e.target === personaXehetasunakOverlay) closePersonaXehetasunakModal(); });
 
   document.getElementById("personaXehetasunakList").addEventListener("click", function(e){
+    var debtRow = e.target.closest('[data-action="delete-sarrera-zorra"]');
+    if (debtRow){
+      if (window.confirm("Ziur mugimendu hau ezabau gurezule? Ekintza hau ezin da desegin.")){
+        var who = currentPersonaIzena;
+        deleteKitapenPertsona(debtRow.getAttribute("data-id")).then(function(){ openPersonaXehetasunakModal(who); })
+          .catch(function(err){ window.alert("Ezin izan da ezabau: " + err.message); });
+      }
+      return;
+    }
     var row = e.target.closest('[data-action="edit-transferentzia"]');
     if (!row) return;
     var existing = kitapenPertsonak.find(function(k){ return k.id === row.getAttribute("data-id"); });
@@ -2076,13 +2147,29 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     if (iPay && !kategoria){ window.alert("Aukeratu kategoria bat."); return; }
     var izena = currentZorPertsona.izena;
     var now = new Date().toISOString();
-    var writes = [saveKitapenPertsona(null, {
+    var settle = {
       izena: izena,
       kopurua: signedKopurua,
       mota: "kendu",
       data: todayStr(),
       createdAt: now
-    })];
+    };
+    var income = iPay ? null : pendingIncomeFor(izena);
+    var incomePart = income ? Math.round(Math.min(signedKopurua, income.amount) * 100) / 100 : 0;
+    if (incomePart > 0) settle.sarreraKopurua = incomePart;
+    var writes = [saveKitapenPertsona(null, settle)];
+    if (incomePart > 0){
+      writes.push(saveMugimendu(null, {
+        data: todayStr(),
+        deskribapena: "Kendu: " + izena,
+        kategoria: income.kategoria,
+        kopurua: incomePart,
+        mota: "sarrera",
+        nork: "neuk",
+        partekatuak: [],
+        createdAt: now
+      }));
+    }
     if (iPay){
       writes.push(saveMugimendu(null, {
         data: todayStr(),
