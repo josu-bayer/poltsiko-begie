@@ -1877,17 +1877,25 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
   });
 
   // Unpaid income still owed by this person: their "sarrera-zorra" debts minus income already
-  // recognised by earlier Kendu settlements. The category comes from their oldest such debt.
+  // recognised by earlier Kendu settlements, oldest first. Each item keeps the original entry's
+  // date, category and description so the income is booked on the day it was first entered.
   function pendingIncomeFor(izena){
-    var key = izena.trim().toLowerCase(), amount = 0, kategoria = null;
+    var key = izena.trim().toLowerCase(), debts = [], paid = 0;
     kitapenPertsonak.slice()
       .sort(function(a,b){ return ((a.data||"")+(a.createdAt||"")).localeCompare((b.data||"")+(b.createdAt||"")); })
       .forEach(function(k){
         if ((k.izena || "").trim().toLowerCase() !== key) return;
-        if (k.mota === "sarrera-zorra"){ amount += -Number(k.kopurua) || 0; if (!kategoria) kategoria = k.kategoria; }
-        if (k.sarreraKopurua) amount -= Number(k.sarreraKopurua) || 0;
+        if (k.mota === "sarrera-zorra") debts.push({ amount: -Number(k.kopurua) || 0, data: k.data || todayStr(), kategoria: k.kategoria || "Bestelakuek", deskribapena: k.deskribapena || "" });
+        if (k.sarreraKopurua) paid += Number(k.sarreraKopurua) || 0;
       });
-    return { amount: Math.max(0, Math.round(amount * 100) / 100), kategoria: kategoria || "Bestelakuek" };
+    var items = [];
+    debts.forEach(function(d){
+      var used = Math.min(paid, d.amount);
+      paid -= used;
+      var left = Math.round((d.amount - used) * 100) / 100;
+      if (left > 0){ d.amount = left; items.push(d); }
+    });
+    return { amount: Math.round(items.reduce(function(s, d){ return s + d.amount; }, 0) * 100) / 100, items: items };
   }
 
   function openZorKenduModal(izena, owed){
@@ -2171,18 +2179,23 @@ footer{text-align:center;color:var(--muted);font-size:0.7rem;margin-top:26px;opa
     var incomePart = income ? Math.round(Math.min(signedKopurua, income.amount) * 100) / 100 : 0;
     if (incomePart > 0) settle.sarreraKopurua = incomePart;
     var writes = [saveKitapenPertsona(null, settle)];
-    if (incomePart > 0){
+    // One income per unpaid entry covered, dated on the day that entry was first recorded.
+    var toBook = incomePart;
+    (income ? income.items : []).forEach(function(d){
+      var part = Math.round(Math.min(toBook, d.amount) * 100) / 100;
+      if (part <= 0) return;
+      toBook = Math.round((toBook - part) * 100) / 100;
       writes.push(saveMugimendu(null, {
-        data: todayStr(),
-        deskribapena: "Kendu: " + izena,
-        kategoria: income.kategoria,
-        kopurua: incomePart,
+        data: d.data,
+        deskribapena: d.deskribapena ? d.deskribapena + " (Kendu: " + izena + ")" : "Kendu: " + izena,
+        kategoria: d.kategoria,
+        kopurua: part,
         mota: "sarrera",
         nork: "neuk",
         partekatuak: [],
         createdAt: now
       }));
-    }
+    });
     if (iPay){
       writes.push(saveMugimendu(null, {
         data: todayStr(),
