@@ -12,7 +12,7 @@ A personal expense tracker with a Basque interface and a dark theme. It keeps tw
 
 ## Features
 
-- A dual ledger with monthly views.
+- A dual ledger: money covered by someone else and own spending.
 - A debts tab that splits shared expenses between named people and tracks who owes what.
 - Installable on a phone, with offline use and sync on reconnect.
 
